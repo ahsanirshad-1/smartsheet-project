@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smartsheet Data Entry & Update</title>
+  <link rel="icon" href="https://tse4.mm.bing.net/th/id/OIP.DXefG0cBoS9prktoJ0SB7AHaD_?pid=Api&P=0&h=220">
+  <link rel="stylesheet" href="enterdata.css">
+</head>
+<body>
+  <div class="form-container">
+    <h2>Smartsheet Data Entry</h2>
+    <form id="smartsheetForm">
+      <label for="taskname">Task Name</label>
+      <input type="text" id="taskname" name="taskname" required>
+
+      <label for="assign">Assign To</label>
+      <input type="text" id="assign" name="assign" required>
+
+      <label for="progress">Progress</label>
+      <select id="progress" name="progress" required>
+        <option value="">Select progress</option>
+        <option value="Not Started">Not Started</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+      </select>
+
+      <label for="startdate">Start Date</label>
+      <input type="date" id="startdate" name="startdate" required>
+
+      <label for="enddate">End Date</label>
+      <input type="date" id="enddate" name="enddate" required>
+     
+      <button type="submit">➕ Add Task</button>
+    </form>
+
+    <hr>
+
+    <h2>Update Existing Task</h2>
+    <form id="updateForm">
+      <label for="rowId">Row ID (from Smartsheet)</label>
+      <input type="text" id="rowId" name="rowId" required>
+
+      <label for="utaskname">Task Name</label>
+      <input type="text" id="utaskname" name="utaskname">
+
+      <label for="uassign">Assign To</label>
+      <input type="text" id="uassign" name="uassign">
+
+      <label for="uprogress">Progress</label>
+      <select id="uprogress" name="uprogress">
+        <option value="">Select progress</option>
+        <option value="Not Started">Not Started</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+      </select>
+
+      <label for="ustartdate">Start Date</label>
+      <input type="date" id="ustartdate" name="ustartdate">
+
+      <label for="uenddate">End Date</label>
+      <input type="date" id="uenddate" name="uenddate">
+
+      <button type="submit">✏️ Update Task</button>
+    </form>
+  </div>
+
+  <script>
+    const SHEET_ID = "YOUR_SHEET_ID"; // Replace with your Smartsheet ID
+    const API_TOKEN = "YOUR_API_TOKEN"; // Replace with your Smartsheet API token
+
+    // ✅ Add Task
+    document.getElementById("smartsheetForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const taskname = document.getElementById("taskname").value;
+      const assign = document.getElementById("assign").value;
+      const progress = document.getElementById("progress").value;
+      const startdate = document.getElementById("startdate").value;
+      const enddate = document.getElementById("enddate").value;
+
+      const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${SHEET_ID}/rows`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          toTop: true,
+          cells: [
+            { columnId: YOUR_TASKNAME_COLUMN_ID, value: taskname },
+            { columnId: YOUR_ASSIGNTO_COLUMN_ID, value: assign },
+            { columnId: YOUR_PROGRESS_COLUMN_ID, value: progress },
+            { columnId: YOUR_STARTDATE_COLUMN_ID, value: startdate },
+            { columnId: YOUR_ENDDATE_COLUMN_ID, value: enddate }
+          ]
+        })
+      });
+
+      if (response.ok) {
+        alert("✅ Task added successfully!");
+        document.getElementById("smartsheetForm").reset();
+      } else {
+        alert("❌ Error adding task. Check console.");
+        console.log(await response.text());
+      }
+    });
+
+    // ✏️ Update Task
+    document.getElementById("updateForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const rowId = document.getElementById("rowId").value;
+      const utaskname = document.getElementById("utaskname").value;
+      const uassign = document.getElementById("uassign").value;
+      const uprogress = document.getElementById("uprogress").value;
+      const ustartdate = document.getElementById("ustartdate").value;
+      const uenddate = document.getElementById("uenddate").value;
+
+      const cellsToUpdate = [];
+      if (utaskname) cellsToUpdate.push({ columnId: YOUR_TASKNAME_COLUMN_ID, value: utaskname });
+      if (uassign) cellsToUpdate.push({ columnId: YOUR_ASSIGNTO_COLUMN_ID, value: uassign });
+      if (uprogress) cellsToUpdate.push({ columnId: YOUR_PROGRESS_COLUMN_ID, value: uprogress });
+      if (ustartdate) cellsToUpdate.push({ columnId: YOUR_STARTDATE_COLUMN_ID, value: ustartdate });
+      if (uenddate) cellsToUpdate.push({ columnId: YOUR_ENDDATE_COLUMN_ID, value: uenddate });
+
+      const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${SHEET_ID}/rows`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify([
+          {
+            id: parseInt(rowId),
+            cells: cellsToUpdate
+          }
+        ])
+      });
+
+      if (response.ok) {
+        alert("✅ Task updated successfully!");
+        document.getElementById("updateForm").reset();
+      } else {
+        alert("❌ Error updating task. Check console.");
+        console.log(await response.text());
+      }
+    });
+  </script>
+</body>
+</html>
