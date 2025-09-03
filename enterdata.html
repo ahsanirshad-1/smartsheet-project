@@ -1,11 +1,10 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>   
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smartsheet Task Board + Automation</title>
   <link rel="stylesheet" href="enterdata.css">
-
 </head>
 <body>
   <header class="navbar">
@@ -84,15 +83,34 @@
     const COL_PROGRESS = 1234567894;  
 
     // --- UI Functions ---
-    function openForm() {
+    function openForm(taskObj = null) {
       document.getElementById("taskForm").style.display = "block";
+
+      if (taskObj) {
+        // Editing mode
+        document.getElementById("formTitle").innerText = "Update Task";
+        document.getElementById("saveBtn").innerText = "✏️ Update";
+
+        document.getElementById("taskname").value = taskObj.name;
+        document.getElementById("assign").value = taskObj.assign;
+        document.getElementById("progressSelect").value = taskObj.status;
+        document.getElementById("startdate").value = taskObj.start;
+        document.getElementById("enddate").value = taskObj.end;
+
+        editTask = taskObj;
+      } else {
+        // Adding mode
+        document.getElementById("smartsheetForm").reset();
+        document.getElementById("formTitle").innerText = "Add Task";
+        document.getElementById("saveBtn").innerText = "✅ Save";
+        editTask = null;
+      }
     }
+
     function closeForm() {
       document.getElementById("taskForm").style.display = "none";
       document.getElementById("smartsheetForm").reset();
       editTask = null;
-      document.getElementById("formTitle").innerText = "Add Task";
-      document.getElementById("saveBtn").innerText = "✅ Save";
     }
 
     function createTaskCard(taskObj) {
@@ -102,6 +120,7 @@
         <h3>${taskObj.name}</h3>
         <p>👤 ${taskObj.assign}</p>
         <p>📅 ${taskObj.start} ➝ ${taskObj.end}</p>
+        <button onclick="openForm(tasks.find(t => t.id === '${taskObj.id}'))">✏️ Edit</button>
       `;
       return taskCard;
     }
@@ -116,11 +135,12 @@
 
       data.rows.forEach(row => {
         const taskObj = {
+          id: row.id, // ✅ save Smartsheet row ID
           name: row.cells.find(c => c.columnId === COL_TASKNAME)?.value || "Untitled",
           assign: row.cells.find(c => c.columnId === COL_ASSIGN)?.value || "Unknown",
           start: row.cells.find(c => c.columnId === COL_START)?.value || "",
           end: row.cells.find(c => c.columnId === COL_END)?.value || "",
-          status: row.cells.find(c => c.columnId === COL_PROGRESS)?.value?.toLowerCase() || "progress", // ✅ default progress
+          status: row.cells.find(c => c.columnId === COL_PROGRESS)?.value?.toLowerCase() || "progress",
           element: null
         };
 
@@ -153,25 +173,67 @@
       });
     }
 
+    async function updateTaskInSmartsheet(taskObj) {
+      const updateRow = {
+        id: taskObj.id,
+        cells: [
+          { columnId: COL_TASKNAME, value: taskObj.name },
+          { columnId: COL_ASSIGN, value: taskObj.assign },
+          { columnId: COL_START, value: taskObj.start },
+          { columnId: COL_END, value: taskObj.end },
+          { columnId: COL_PROGRESS, value: taskObj.status }
+        ]
+      };
+
+      await fetch(`https://api.smartsheet.com/2.0/sheets/${SHEET_ID}/rows`, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + API_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify([updateRow])
+      });
+    }
+
     // --- Form Handler ---
     document.getElementById("smartsheetForm").addEventListener("submit", async function(e) {
       e.preventDefault();
 
-      const taskObj = {
-        name: document.getElementById("taskname").value,
-        assign: document.getElementById("assign").value,
-        start: document.getElementById("startdate").value,
-        end: document.getElementById("enddate").value,
-        status: document.getElementById("progressSelect").value,
-        element: null
-      };
+      if (editTask) {
+        // Update existing
+        editTask.name = document.getElementById("taskname").value;
+        editTask.assign = document.getElementById("assign").value;
+        editTask.start = document.getElementById("startdate").value;
+        editTask.end = document.getElementById("enddate").value;
+        editTask.status = document.getElementById("progressSelect").value;
 
-      const taskCard = createTaskCard(taskObj);
-      taskObj.element = taskCard;
-      document.getElementById(taskObj.status).appendChild(taskCard);
-      tasks.push(taskObj);
+        // Refresh UI
+        editTask.element.remove();
+        const updatedCard = createTaskCard(editTask);
+        editTask.element = updatedCard;
+        document.getElementById(editTask.status).appendChild(updatedCard);
 
-      await saveTaskToSmartsheet(taskObj);
+        await updateTaskInSmartsheet(editTask);
+      } else {
+        // Add new
+        const taskObj = {
+          id: Date.now().toString(), // temporary ID until reload
+          name: document.getElementById("taskname").value,
+          assign: document.getElementById("assign").value,
+          start: document.getElementById("startdate").value,
+          end: document.getElementById("enddate").value,
+          status: document.getElementById("progressSelect").value,
+          element: null
+        };
+
+        const taskCard = createTaskCard(taskObj);
+        taskObj.element = taskCard;
+        document.getElementById(taskObj.status).appendChild(taskCard);
+        tasks.push(taskObj);
+
+        await saveTaskToSmartsheet(taskObj);
+      }
+
       closeForm();
     });
 
@@ -180,3 +242,9 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
