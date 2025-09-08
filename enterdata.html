@@ -3,20 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smartsheet Task Board</title>
+  <title>Smartsheet  Board</title>
   <link rel="stylesheet" href="enterdata.css">
   <script src="enterdata.js" defer></script>
+  
 </head>
 <body>
   <!-- ✅ Header -->
   <header class="navbar">
-    <h1>🚀 Smartsheet Task Board</h1>
+    <div class="nav-left">
+      <nav class="menu">
+        <a href="#">Dashboard</a>
+        <a href="#">Projects</a>
+        <a href="#">Teams</a>
+        <a href="#">Reports</a>
+      </nav>
+    </div>
+    <div class="nav-right">
+      <input type="text" placeholder="🔍 Search..." class="search-bar">
+      <button class="add-task-btn" onclick="openForm()">➕ Create Task</button>
+    </div>
   </header>
 
   <!-- ✅ Task Board -->
   <main class="board">
-    <div class="column" id="todo">
-      <h2>📝 To Do</h2>
+    <div class="column" id="backlog">
+      <h2>📌 Backlog</h2>
+    </div>
+    <div class="column" id="waiting">
+      <h2>⏳ Waiting</h2>
+    </div>
+    <div class="column" id="meeting">
+      <h2>📅 Meeting</h2>
     </div>
     <div class="column" id="inprogress">
       <h2>⚡ In Progress</h2>
@@ -29,9 +47,6 @@
     </div>
   </main>
 
-  <!-- ✅ Floating Add Task Button -->
-  <button class="add-task-btn" onclick="openForm()">➕ Add Task</button>
-
   <!-- ✅ Popup Form -->
   <div id="taskForm" class="modal">
     <div class="modal-content">
@@ -40,17 +55,29 @@
       <form id="smartsheetForm">
         <input type="text" id="taskname" placeholder="Task Name" required>
         <input type="text" id="assign" placeholder="Assign To" required>
+
         <select id="progressSelect" required>
-          <option value="todo">To Do</option>
+          <option value="backlog">Backlog</option>
+          <option value="waiting">Waiting</option>
+          <option value="meeting">Meeting</option>
           <option value="inprogress">In Progress</option>
           <option value="review">Review</option>
           <option value="done">Done</option>
         </select>
+
         <input type="date" id="startdate" required>
         <input type="date" id="enddate" required>
-        <button type="submit" id="saveBtn" class="submit-btn">✅ Save</button>
+
+        <!-- Bigger Save Button -->
+        <button type="submit" id="saveBtn" class="submit-btn">✅ Save Task</button>
       </form>
     </div>
   </div>
+
+  <!-- ✅ Footer -->
+  <footer class="footer">
+    <p>📌 Smartsheet task Board | © 2025 All Rights Reserved</p>
+   
+  </footer>
 </body>
 </html>
