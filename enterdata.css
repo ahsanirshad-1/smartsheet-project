@@ -9,218 +9,212 @@ body {
   background: #1e1e1e;
   color: #e0e0e0;
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
 }
 
-/* ✅ Navbar */
-.navbar {
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background: #2b2b2b;
+  padding: 1rem;
+}
+
+.sidebar h2 {
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.sidebar nav a {
+  display: block;
+  padding: 0.5rem;
+  color: #ccc;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.sidebar nav a:hover {
+  background: #444;
+  color: #fff;
+}
+
+/* Main */
+main {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+/* Header */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #2a2a2a;
-  padding: 12px 24px;
-  border-bottom: 1px solid #3a3a3a;
 }
 
-.navbar .menu a {
-  color: #cfcfcf;
-  margin-right: 20px;
-  text-decoration: none;
-  font-weight: 500;
+.header h1 {
+  font-size: 1.8rem;
 }
 
-.navbar .menu a:hover {
-  color: #ffffff;
-}
-
-.search-bar {
-  background: #2f2f2f;
-  border: 1px solid #444;
-  padding: 6px 12px;
-  border-radius: 6px;
-  color: #fff;
-}
-
-.add-task-btn {
-  background: #007bff;
+.header button {
+  padding: 0.6rem 1.2rem;
+  background: #4CAF50;
   color: white;
   border: none;
-  padding: 8px 14px;
-  margin-left: 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
 }
 
-.add-task-btn:hover {
-  background: #0056d2;
+.header button:hover {
+  background: #45a049;
 }
 
-/* ✅ Board → Table Layout */
-.board {
-  flex: 1 0 auto;
-  padding: 20px;
-  overflow-x: auto;
+/* Dashboard */
+.dashboard {
+  display: flex;
+  gap: 1rem;
+  margin: 1.5rem 0;
 }
 
+.card {
+  flex: 1;
+  background: #2b2b2b;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* Summary */
+.summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  flex: 1;
+  background: #3a3a3a;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.summary-card span {
+  display: block;
+  font-size: 1.4rem;
+  margin-top: 0.5rem;
+}
+
+/* Task Table */
 .task-table {
   width: 100%;
   border-collapse: collapse;
-  background: #1e1e1e;
+  background: #2b2b2b;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 2rem;
 }
 
-.task-table th,
-.task-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #333;
-  text-align: left;
+.task-table th, .task-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid #444;
+  text-align: center;
 }
 
 .task-table th {
-  font-size: 13px;
-  color: #cfcfcf;
-  font-weight: 600;
-  border-bottom: 2px solid #444;
-  background: #222;
+  background: #333;
 }
 
-.task-table tr:hover {
-  background: #2c2c2c;
-}
-
-/* ✅ Status Pills */
-.status {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status.not-started { background: #555; color: #fff; }
-.status.in-progress { background: #007bff; color: #fff; }
-.status.waiting     { background: #f39c12; color: #fff; }
-.status.review      { background: #9b59b6; color: #fff; }
-.status.done        { background: #27ae60; color: #fff; }
-
-/* ✅ Delete Button */
-.delete-btn {
-  background: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.delete-btn:hover {
-  background: #d93636;
-}
-
-/* ✅ Modal */
+/* Modal */
 .modal {
   display: none;
   position: fixed;
-  z-index: 999;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background: rgba(15, 15, 15, 0.9);
+  z-index: 1000;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-content {
-  background: #2a2a2a;
-  padding: 20px;
-  margin: 5% auto;
-  border-radius: 10px;
+  background: #2b2b2b;
+  padding: 1.5rem;
+  border-radius: 12px;
   width: 400px;
-  color: #fff;
-  border: 1px solid #3a3a3a;
 }
 
-/* 🟦 Modal Form Grid Layout */
-#smartsheetForm .form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 16px;
+.modal-content h2 {
+  margin-top: 0;
 }
 
-#smartsheetForm .form-grid input,
-#smartsheetForm .form-grid select {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-#smartsheetForm .form-grid input[type="text"]:nth-child(1),
-#smartsheetForm .form-grid input[type="text"]:nth-child(2),
-#smartsheetForm .form-grid input[type="date"]:nth-child(3),
-#smartsheetForm .form-grid input[type="date"]:nth-child(4) {
-  grid-column: span 1;
-}
-
-#smartsheetForm .form-grid select {
-  grid-column: span 2;
-}
-
-@media (max-width: 600px) {
-  .modal-content {
-    width: 95vw;
-    min-width: unset;
-  }
-  #smartsheetForm .form-grid {
-    grid-template-columns: 1fr;
-  }
-  #smartsheetForm .form-grid input,
-  #smartsheetForm .form-grid select {
-    grid-column: span 1 !important;
-  }
+.modal-content label {
+  display: block;
+  margin-top: 0.5rem;
 }
 
 .modal-content input,
 .modal-content select {
-  margin: 8px 0;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #1f1f1f;
-  color: #fff;
-}
-
-.submit-btn {
-  background: #007bff;
-  border: none;
-  padding: 10px;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-  margin-top: 10px;
   width: 100%;
-  font-size: 14px;
-}
-
-.submit-btn:hover {
-  background: #0056d2;
-}
-
-.close {
-  float: right;
-  font-size: 22px;
-  cursor: pointer;
-  color: #aaa;
-}
-
-.close:hover {
+  padding: 0.6rem;
+  margin-top: 0.3rem;
+  border-radius: 8px;
+  border: none;
+  background: #444;
   color: #fff;
 }
 
-/* ✅ Footer */
-.footer {
-  flex-shrink: 0;
-  text-align: center;
-  padding: 12px;
-  background: #2a2a2a;
-  color: #cfcfcf;
-  border-top: 1px solid #3a3a3a;
-  margin-top: 0;
+.modal-content button {
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.modal-content button[type="submit"] {
+  background: #4CAF50;
+  color: white;
+}
+
+.modal-content button[type="button"] {
+  background: #777;
+  color: white;
+  margin-left: 0.5rem;
+}
+
+/* ✅ Daily Check-in */
+#daily-checkin {
+  margin-top: 2rem;
+}
+
+#daily-checkin h2 {
+  margin-bottom: 1rem;
+}
+
+.daily-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.daily-card {
+  background: #2b2b2b;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.daily-card h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: #4CAF50;
+}
+
+.daily-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.daily-card li {
+  padding: 6px 0;
+  border-bottom: 1px solid #444;
+  font-size: 0.9rem;
 }
