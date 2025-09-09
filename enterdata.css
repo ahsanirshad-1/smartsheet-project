@@ -1,167 +1,226 @@
-/* 🌐 Global Reset */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* 🌙 Dark Theme */
+html, body {
+  height: 100%;
+}
 
 body {
+  margin: 0;
   font-family: "Inter", "Segoe UI", Roboto, sans-serif;
-  background: #f4f5f7;
-  color: #172b4d;
+  background: #1e1e1e;
+  color: #e0e0e0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* 🚀 Header */
+/* ✅ Navbar */
 .navbar {
-  background: #0747a6;
-  color: white;
-  padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #2a2a2a;
+  padding: 12px 24px;
+  border-bottom: 1px solid #3a3a3a;
 }
 
-.menu a {
-  color: white;
-  margin-right: 15px;
+.navbar .menu a {
+  color: #cfcfcf;
+  margin-right: 20px;
   text-decoration: none;
-  font-size: 14px;
+  font-weight: 500;
 }
 
-.menu a:hover { text-decoration: underline; }
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+.navbar .menu a:hover {
+  color: #ffffff;
 }
 
 .search-bar {
-  padding: 6px 10px;
+  background: #2f2f2f;
+  border: 1px solid #444;
+  padding: 6px 12px;
   border-radius: 6px;
-  border: none;
-  font-size: 13px;
-}
-
-/* 📌 Create Task Button */
-.add-task-btn {
-  background: #0052cc;
   color: #fff;
+}
+
+.add-task-btn {
+  background: #007bff;
+  color: white;
   border: none;
-  border-radius: 4px;
-  padding: 8px 18px;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 8px 14px;
+  margin-left: 12px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
 }
 
-.add-task-btn:hover { background: #0747a6; }
+.add-task-btn:hover {
+  background: #0056d2;
+}
 
-/* 📊 Board */
+/* ✅ Board → Table Layout */
 .board {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
+  flex: 1 0 auto;
   padding: 20px;
-  flex-grow: 1;
+  overflow-x: auto;
 }
 
-/* 📂 Columns */
-.column {
-  background: #ebecf0;
-  border-radius: 6px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1e1e1e;
 }
 
-.column h2 {
-  font-size: 14px;
+.task-table th,
+.task-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #333;
+  text-align: left;
+}
+
+.task-table th {
+  font-size: 13px;
+  color: #cfcfcf;
   font-weight: 600;
-  margin-bottom: 12px;
-  text-align: center;
+  border-bottom: 2px solid #444;
+  background: #222;
 }
 
-/* 🎴 Task Cards */
-.task-card {
-  background: #fff;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.25);
-  font-size: 14px;
-  cursor: grab;
+.task-table tr:hover {
+  background: #2c2c2c;
 }
 
-.task-card h3 { margin-bottom: 6px; font-size: 15px; font-weight: 600; }
-.task-card p { font-size: 13px; color: #5e6c84; }
+/* ✅ Status Pills */
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
 
-/* 📝 Modal Form */
+.status.not-started { background: #555; color: #fff; }
+.status.in-progress { background: #007bff; color: #fff; }
+.status.waiting     { background: #f39c12; color: #fff; }
+.status.review      { background: #9b59b6; color: #fff; }
+.status.done        { background: #27ae60; color: #fff; }
+
+/* ✅ Delete Button */
+.delete-btn {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.delete-btn:hover {
+  background: #d93636;
+}
+
+/* ✅ Modal */
 .modal {
   display: none;
   position: fixed;
-  z-index: 1000;
+  z-index: 999;
   left: 0; top: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.4);
-  justify-content: center; align-items: center;
+  width: 100%; height: 100%;
+  background: rgba(15, 15, 15, 0.9);
 }
 
 .modal-content {
-  background: #fff;
-  padding: 24px;
-  border-radius: 8px;
-  width: 420px;
-  max-width: 95%;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  background: #2a2a2a;
+  padding: 20px;
+  margin: 5% auto;
+  border-radius: 10px;
+  width: 400px;
+  color: #fff;
+  border: 1px solid #3a3a3a;
 }
 
-.modal-content input, .modal-content select {
+/* 🟦 Modal Form Grid Layout */
+#smartsheetForm .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+
+#smartsheetForm .form-grid input,
+#smartsheetForm .form-grid select {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #dfe1e6;
-  border-radius: 4px;
-  margin-bottom: 14px;
+  box-sizing: border-box;
+}
+
+#smartsheetForm .form-grid input[type="text"]:nth-child(1),
+#smartsheetForm .form-grid input[type="text"]:nth-child(2),
+#smartsheetForm .form-grid input[type="date"]:nth-child(3),
+#smartsheetForm .form-grid input[type="date"]:nth-child(4) {
+  grid-column: span 1;
+}
+
+#smartsheetForm .form-grid select {
+  grid-column: span 2;
+}
+
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95vw;
+    min-width: unset;
+  }
+  #smartsheetForm .form-grid {
+    grid-template-columns: 1fr;
+  }
+  #smartsheetForm .form-grid input,
+  #smartsheetForm .form-grid select {
+    grid-column: span 1 !important;
+  }
+}
+
+.modal-content input,
+.modal-content select {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1f1f1f;
+  color: #fff;
+}
+
+.submit-btn {
+  background: #007bff;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
   font-size: 14px;
 }
 
-/* ✅ Bigger Save Button */
-.submit-btn {
-  background: #0052cc;
-  color: #fff;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
+.submit-btn:hover {
+  background: #0056d2;
 }
-
-.submit-btn:hover { background: #0747a6; }
 
 .close {
-  position: absolute;
-  top: 10px; right: 14px;
+  float: right;
   font-size: 22px;
-  color: #5e6c84;
   cursor: pointer;
+  color: #aaa;
 }
 
-/* Show modal when display is block (for JS toggle) */
-.modal[style*="display: block"] {
-  display: flex !important;
+.close:hover {
+  color: #fff;
 }
 
-/* 🌐 Footer */
+/* ✅ Footer */
 .footer {
-  background: #f1f1f1;
-  color: #555;
+  flex-shrink: 0;
   text-align: center;
   padding: 12px;
-  font-size: 13px;
-  border-top: 1px solid #ddd;
+  background: #2a2a2a;
+  color: #cfcfcf;
+  border-top: 1px solid #3a3a3a;
+  margin-top: 0;
 }

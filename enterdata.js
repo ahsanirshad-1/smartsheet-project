@@ -1,84 +1,96 @@
-// ================================
-// 📌 Modal Control
-// ================================
+// ✅ Open & Close Form
 function openForm() {
   document.getElementById("taskForm").style.display = "block";
 }
-
 function closeForm() {
   document.getElementById("taskForm").style.display = "none";
 }
 
-// ================================
-// 📌 Load Tasks from FastAPI
-// ================================
-async function loadTasks() {
-  try {
-    const response = await fetch(" http://127.0.0.1:8000");
+// ✅ Add Task Row to Table
+function addTaskToTable(task) {
+  const tbody = document.getElementById("taskBody");
+  const row = document.createElement("tr");
 
-    // Clear all task columns but keep headers
-    document.querySelectorAll(".column").forEach(col => {
-      const header = col.querySelector("h2").outerHTML;
-      col.innerHTML = header;
-    });
+  row.innerHTML = `
+    <td>${task.assign}</td>
+    <td>${task.taskname}</td>
+    <td>${new Date().toLocaleDateString()}</td>
+    <td>${task.progressSelect}</td>
+    <td>${task.startdate}</td>
+    <td>${task.enddate}</td>
+    <td>${task.progressSelect === "Waiting" ? "⏳ Yes" : "-"}</td>
+    <td>${task.progressSelect === "Review" ? "📅 Required" : "-"}</td>
+    <td><button class="delete-btn">❌</button></td>
+  `;
 
-    
-    data.tasks.forEach(task => {
-      const taskDiv = document.createElement("div");
-      taskDiv.className = "task-card";
-      taskDiv.innerHTML = `
-        <h3>${task["Task Name"] || "Untitled Task"}</h3>
-        <p>👤 ${task["Assign To"] || "Unassigned"}</p>
-        <p>📅 ${task["Start Date"] || ""} → ${task["End Date"] || ""}</p>
-      `;
+  // ✅ Delete logic
+  row.querySelector(".delete-btn").addEventListener("click", async () => {
+    if (confirm(`Delete task: ${task.taskname}?`)) {
+      try {
+        let response = await fetch(`http://127.0.0.1:8000/delete_task/${task.taskname}`, {
+          method: "DELETE",
+        });
 
-      // Place into correct column based on Status
-      const status = (task["Status"] || "backlog").toLowerCase();
-      const column = document.getElementById(status);
-      if (column) {
-        column.appendChild(taskDiv);
-      } else {
-        // Default to backlog if unknown status
-        document.getElementById("backlog").appendChild(taskDiv);
+        let result = await response.json();
+        console.log(result);
+
+        row.remove(); // remove from UI
+      } catch (err) {
+        console.error("Error deleting task:", err);
+        alert("❌ Failed to delete task!");
       }
-    });
+    }
+  });
 
-  } catch (error) {
-    console.error("❌ Error loading tasks:", error);
-  }
+  tbody.appendChild(row);
 }
 
-// ================================
-// 📌 Add New Task
-// ================================
-document.getElementById("smartsheetForm").addEventListener("submit", async (e) => {
+// ✅ Handle Form Submit
+document.getElementById("smartsheetForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const newTask = {
-    name: document.getElementById("taskname").value,
-    description: document.getElementById("assign").value,
-    status: document.getElementById("progressSelect").value,
-    start_date: document.getElementById("startdate").value,
-    end_date: document.getElementById("enddate").value
+  const task = {
+    taskname: document.getElementById("taskname").value,
+    assign: document.getElementById("assign").value,
+    progressSelect: document.getElementById("progressSelect").value,
+    startdate: document.getElementById("startdate").value,
+    enddate: document.getElementById("enddate").value,
   };
 
   try {
-    await fetch("/api/tasks", {
+    let response = await fetch("http://127.0.0.1:8000/add_task/", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(newTask)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
     });
 
-    // Close form and reload tasks
-    closeForm();
-    loadTasks();
+    let result = await response.json();
+    console.log("Save response:", result);
 
-  } catch (error) {
-    console.error("❌ Error adding task:", error);
+    // ✅ Add to table instantly
+    addTaskToTable(task);
+
+    document.getElementById("smartsheetForm").reset();
+    closeForm();
+
+  } catch (err) {
+    console.error("Error saving task:", err);
+    alert("❌ Failed to save task!");
   }
 });
 
-// ================================
-// 📌 Initialize on Page Load
-// ================================
-window.onload = loadTasks;
+// ✅ Load Existing Tasks from MongoDB on Page Load
+window.onload = async function () {
+  try {
+    let response = await fetch("http://127.0.0.1:8000/get_tasks/");
+    let data = await response.json();
+    console.log("Loaded tasks:", data);
+
+    data.tasks.forEach(task => {
+      addTaskToTable(task);
+    });
+
+  } catch (err) {
+    console.error("Error loading tasks:", err);
+  }
+};

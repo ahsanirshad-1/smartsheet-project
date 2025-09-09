@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smartsheet  Board</title>
+  <title>Smartsheet Board</title>
   <link rel="stylesheet" href="enterdata.css">
   <script src="enterdata.js" defer></script>
-  
 </head>
 <body>
   <!-- ✅ Header -->
@@ -25,26 +24,25 @@
     </div>
   </header>
 
-  <!-- ✅ Task Board -->
+  <!-- ✅ Task Table (instead of Kanban board) -->
   <main class="board">
-    <div class="column" id="backlog">
-      <h2>📌 Backlog</h2>
-    </div>
-    <div class="column" id="waiting">
-      <h2>⏳ Waiting</h2>
-    </div>
-    <div class="column" id="meeting">
-      <h2>📅 Meeting</h2>
-    </div>
-    <div class="column" id="inprogress">
-      <h2>⚡ In Progress</h2>
-    </div>
-    <div class="column" id="review">
-      <h2>🔍 Review</h2>
-    </div>
-    <div class="column" id="done">
-      <h2>✅ Done</h2>
-    </div>
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th>Person</th>
+          <th>Task</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>SOD</th>
+          <th>EOD</th>
+          <th>Waiting On</th>
+          <th>Meetings</th>
+        </tr>
+      </thead>
+      <tbody id="taskBody">
+        <!-- Tasks will be dynamically inserted here -->
+      </tbody>
+    </table>
   </main>
 
   <!-- ✅ Popup Form -->
@@ -57,18 +55,16 @@
         <input type="text" id="assign" placeholder="Assign To" required>
 
         <select id="progressSelect" required>
-          <option value="backlog">Backlog</option>
-          <option value="waiting">Waiting</option>
-          <option value="meeting">Meeting</option>
-          <option value="inprogress">In Progress</option>
-          <option value="review">Review</option>
-          <option value="done">Done</option>
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Waiting">Waiting</option>
+          <option value="Review">Review</option>
+          <option value="Done">Done</option>
         </select>
 
         <input type="date" id="startdate" required>
         <input type="date" id="enddate" required>
 
-        <!-- Bigger Save Button -->
         <button type="submit" id="saveBtn" class="submit-btn">✅ Save Task</button>
       </form>
     </div>
@@ -76,8 +72,7 @@
 
   <!-- ✅ Footer -->
   <footer class="footer">
-    <p>📌 Smartsheet task Board | © 2025 All Rights Reserved</p>
-   
+    <p>📌 Smartsheet Task Board | © 2025 All Rights Reserved</p>
   </footer>
 </body>
 </html>
