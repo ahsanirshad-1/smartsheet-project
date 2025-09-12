@@ -50,7 +50,7 @@ getElementByIdIgnoreCase("taskForm").addEventListener("submit", async (e) => {
     });
 
     if (res.ok) {
-      showToast("✅ Task added & email sent to member!");
+      showToast("Task is saved");
       setTimeout(() => window.location.href = "workspace.html", 1500);
     } else {
       const errorData = await res.json();
@@ -85,4 +85,12 @@ async function loadMembers() {
   } catch (err) {
     console.error("Error loading members:", err);
   }
+}
+
+function showToast(msg) {
+  const toast = document.createElement("div");
+  toast.textContent = msg;
+  toast.className = "toast";
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
 }

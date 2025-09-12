@@ -74,11 +74,17 @@ document.getElementById("dailyTaskForm").addEventListener("submit", async (e) =>
   const token = localStorage.getItem('authToken');
   const headers = { "Content-Type": "application/json" };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  await fetch(`${API_URL}/daily`, {
+  const res = await fetch(`${API_URL}/daily`, {
     method: "POST",
     headers,
     body: JSON.stringify(newTask)
   });
+
+  if (res.ok) {
+    showToast("Task is saved");
+  } else {
+    showToast("❌ Failed to add daily task");
+  }
 
   closeDailyForm();
   loadDailyTasks();
@@ -88,3 +94,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDailyTasks();
   loadMembers();
 });
+
+function showToast(msg) {
+  const toast = document.createElement("div");
+  toast.textContent = msg;
+  toast.className = "toast";
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
