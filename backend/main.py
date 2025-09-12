@@ -6,48 +6,15 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-import sqlite3
-import uvicorn
+from pymongo import MongoClient
 
 # Database setup
-DATABASE = "tasks.db"
-
-def init_db():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
-        username TEXT UNIQUE,
-        email TEXT UNIQUE,
-        hashed_password TEXT
-    )''')
-    c.execute('''CREATE TABLE IF NOT EXISTS tasks (
-        id INTEGER PRIMARY KEY,
-        taskname TEXT,
-        assign TEXT,
-        status TEXT,
-        startdate TEXT,
-        enddate TEXT,
-        email TEXT,
-        send_reminder BOOLEAN
-    )''')
-    c.execute('''CREATE TABLE IF NOT EXISTS daily (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        assign TEXT,
-        description TEXT,
-        date TEXT
-    )''')
-    c.execute('''CREATE TABLE IF NOT EXISTS team (
-        id INTEGER PRIMARY KEY,
-        name TEXT UNIQUE,
-        email TEXT,
-        team TEXT
-    )''')
-    conn.commit()
-    conn.close()
-
-init_db()
+mongo_client = MongoClient('mongodb://mongodb:27017/')
+mongo_db = mongo_client['task_manager']
+users_col = mongo_db['users']
+tasks_col = mongo_db['tasks']
+daily_col = mongo_db['daily']
+team_col = mongo_db['team']
 
 # FastAPI app
 app = FastAPI()
@@ -140,162 +107,139 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 # Routes
 @app.post("/register", response_model=Token)
 async def register(user: UserCreate):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
     hashed_password = get_password_hash(user.password)
-    try:
-        c.execute("INSERT INTO users (username, email, hashed_password) VALUES (?, ?, ?)",
-                  (user.username, user.email, hashed_password))
-        conn.commit()
-    except sqlite3.IntegrityError:
-        conn.close()
+    if users_col.find_one({"username": user.username}) or users_col.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Username or email already registered")
-    conn.close()
+    user_doc = {
+        "username": user.username,
+        "email": user.email,
+        "hashed_password": hashed_password
+    }
+    users_col.insert_one(user_doc)
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/token", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT hashed_password FROM users WHERE username = ?", (form_data.username,))
-    result = c.fetchone()
-    conn.close()
-    if not result or not verify_password(form_data.password, result[0]):
+    user = users_col.find_one({"username": form_data.username})
+    if not user or not verify_password(form_data.password, user["hashed_password"]):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     access_token = create_access_token(data={"sub": form_data.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/tasks", response_model=List[Task])
 async def get_tasks(current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT taskname, assign, status, startdate, enddate, email, send_reminder FROM tasks")
-    rows = c.fetchall()
-    conn.close()
     tasks = []
-    for row in rows:
+    for task_doc in tasks_col.find():
         tasks.append(Task(
-            taskname=row[0],
-            assign=row[1],
-            status=row[2],
-            startdate=row[3],
-            enddate=row[4],
-            email=row[5],
-            send_reminder=bool(row[6])
+            taskname=task_doc.get("taskname"),
+            assign=task_doc.get("assign"),
+            status=task_doc.get("status"),
+            startdate=task_doc.get("startdate"),
+            enddate=task_doc.get("enddate"),
+            email=task_doc.get("email"),
+            send_reminder=task_doc.get("sendReminder", False)
         ))
     return tasks
 
 @app.post("/tasks")
 async def create_task(task: Task, current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("INSERT INTO tasks (taskname, assign, status, startdate, enddate, email, send_reminder) VALUES (?, ?, ?, ?, ?, ?, ?)",
-              (task.taskname, task.assign, task.status, task.startdate, task.enddate, task.email, task.send_reminder))
-    conn.commit()
-    conn.close()
+    task_doc = {
+        "taskname": task.taskname,
+        "assign": task.assign,
+        "status": task.status,
+        "startdate": task.startdate,
+        "enddate": task.enddate,
+        "email": task.email,
+        "sendReminder": task.send_reminder
+    }
+    tasks_col.insert_one(task_doc)
     return {"message": "Task created"}
 
 @app.put("/tasks/{taskname}")
 async def update_task(taskname: str, task: Task, current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("UPDATE tasks SET assign=?, status=?, startdate=?, enddate=?, email=?, send_reminder=? WHERE taskname=?",
-              (task.assign, task.status, task.startdate, task.enddate, task.email, task.send_reminder, taskname))
-    conn.commit()
-    conn.close()
+    tasks_col.update_one(
+        {"taskname": taskname},
+        {"$set": {
+            "assign": task.assign,
+            "status": task.status,
+            "startdate": task.startdate,
+            "enddate": task.enddate,
+            "email": task.email,
+            "sendReminder": task.send_reminder
+        }}
+    )
     return {"message": "Task updated"}
 
 @app.delete("/tasks/{taskname}")
 async def delete_task(taskname: str, current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("DELETE FROM tasks WHERE taskname=?", (taskname,))
-    conn.commit()
-    conn.close()
+    tasks_col.delete_one({"taskname": taskname})
     return {"message": "Task deleted"}
 
 @app.get("/daily", response_model=List[DailyTask])
 async def get_daily_tasks(current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT name, assign, description, date FROM daily")
-    rows = c.fetchall()
-    conn.close()
     tasks = []
-    for row in rows:
+    for task_doc in daily_col.find():
         tasks.append(DailyTask(
-            name=row[0],
-            assign=row[1],
-            description=row[2],
-            date=row[3]
+            name=task_doc.get("name"),
+            assign=task_doc.get("assign"),
+            description=task_doc.get("description"),
+            date=task_doc.get("date")
         ))
     return tasks
 
 @app.post("/daily")
 async def create_daily_task(task: DailyTask, current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("INSERT INTO daily (name, assign, description, date) VALUES (?, ?, ?, ?)",
-              (task.name, task.assign, task.description, task.date))
-    conn.commit()
-    conn.close()
+    task_doc = {
+        "name": task.name,
+        "assign": task.assign,
+        "description": task.description,
+        "date": task.date
+    }
+    daily_col.insert_one(task_doc)
     return {"message": "Daily task created"}
 
 @app.put("/daily/{taskname}")
 async def update_daily_task(taskname: str, task: DailyTask, current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("UPDATE daily SET assign=?, description=?, date=? WHERE name=?",
-              (task.assign, task.description, task.date, taskname))
-    conn.commit()
-    conn.close()
+    daily_col.update_one(
+        {"name": taskname},
+        {"$set": {
+            "assign": task.assign,
+            "description": task.description,
+            "date": task.date
+        }}
+    )
     return {"message": "Daily task updated"}
 
 @app.delete("/daily/{taskname}")
 async def delete_daily_task(taskname: str, current_user: str = Depends(get_current_user)):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("DELETE FROM daily WHERE name=?", (taskname,))
-    conn.commit()
-    conn.close()
+    daily_col.delete_one({"name": taskname})
     return {"message": "Daily task deleted"}
 
 @app.get("/team", response_model=List[TeamMember])
 async def get_team():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT name, email, team FROM team")
-    rows = c.fetchall()
-    conn.close()
     members = []
-    for row in rows:
+    for member_doc in team_col.find():
         members.append(TeamMember(
-            name=row[0],
-            email=row[1],
-            team=row[2]
+            name=member_doc.get("name"),
+            email=member_doc.get("email"),
+            team=member_doc.get("team")
         ))
     return members
 
 @app.post("/team")
 async def create_team_member(member: TeamMember):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    try:
-        c.execute("INSERT INTO team (name, email, team) VALUES (?, ?, ?)",
-                  (member.name, member.email, member.team))
-        conn.commit()
-    except sqlite3.IntegrityError:
-        conn.close()
+    if team_col.find_one({"name": member.name}):
         raise HTTPException(status_code=400, detail="Member name already exists")
-    conn.close()
+    member_doc = {
+        "name": member.name,
+        "email": member.email,
+        "team": member.team
+    }
+    team_col.insert_one(member_doc)
     return {"message": "Team member added"}
 
 @app.delete("/team/{name}")
 async def delete_team_member(name: str):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("DELETE FROM team WHERE name=?", (name,))
-    conn.commit()
-    conn.close()
+    team_col.delete_one({"name": name})
     return {"message": "Team member deleted"}
