@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Task</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="add-task.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="workspace.html">📁 Workspace</a>
+      <a href="daily.html">📅 Daily Check-in</a>
+      <a href="teams.html">👥 Teams</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="header">
+      <h1>➕ Add Task</h1>
+    </header>
+
+    <form id="taskForm" class="form-container">
+      <label>Task Name</label>
+      <input type="text" id="taskName" required>
+
+      <label>Assign To</label>
+      <select id="assign" required>
+        <option value="">Select a member</option>
+      </select>
+
+      <label>Status</label>
+      <select id="status">
+        <option>In Progress</option>
+        <option>Done</option>
+        <option>Review</option>
+        <option>Waiting</option>
+      </select>
+
+      <label>Start Date</label>
+      <input type="date" id="startDate" required>
+
+      <label>End Date</label>
+      <input type="date" id="endDate" required>
+
+      <label>
+        <input type="checkbox" id="sendReminder"> Send reminder email 1 day before deadline
+      </label>
+
+      <div class="button-group">
+        <button type="submit">Save Task</button>
+        <button type="button" id="cancelBtn">Cancel</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

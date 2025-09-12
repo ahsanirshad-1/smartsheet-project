@@ -1,133 +1,161 @@
 // =============================
-// ✅ Modal Functions
+// ✅ API Base URL
 // =============================
-function openForm() {
-  document.getElementById("taskForm").style.display = "flex";
-}
-function closeForm() {
-  document.getElementById("taskForm").style.display = "none";
-}
+const API_BASE = "http://127.0.0.1:8000";
 
-// =============================
-// ✅ Add Task Row to Table
-// =============================
-function addTaskToTable(task) {
-  const tbody = document.getElementById("taskBody");
-  const row = tbody.insertRow();
-  row.innerHTML = `
-    <td>${task.assign}</td>
-    <td>${task.taskname}</td>
-    <td>${task.startdate} → ${task.enddate}</td>
-    <td>${task.progressSelect}</td>
-    <td>${task.startdate}</td>
-    <td>${task.enddate}</td>
-    <td>${task.progressSelect === "Waiting" ? "⏳ Yes" : "-"}</td>
-    <td>${task.progressSelect === "Review" ? "📅 Required" : "-"}</td>
-  `;
-
-  updateCounts(task.progressSelect);
-  addTaskToDailyCheckin(task); // ✅ also show in daily check-in
+function getElementByIdIgnoreCase(id) {
+  id = id.toLowerCase();
+  const allElements = document.querySelectorAll("*[id]");
+  for (const el of allElements) {
+    if (el.id.toLowerCase() === id) return el;
+  }
+  return null;
 }
 
 // =============================
-// ✅ Handle Task Submission
+// ✅ Open / Close Modals
 // =============================
-document.getElementById("smartsheetForm").addEventListener("submit", async function(e) {
+function openTaskForm() {
+  getElementByIdIgnoreCase("taskForm").style.display = "flex";
+}
+function closeTaskForm() {
+  getElementByIdIgnoreCase("taskForm").style.display = "none";
+}
+
+function openTeamForm() {
+  getElementByIdIgnoreCase("teamForm").style.display = "flex";
+}
+function closeTeamForm() {
+  getElementByIdIgnoreCase("teamForm").style.display = "none";
+}
+
+// =============================
+// ✅ Load Team Members into Dropdown + Table
+// =============================
+async function loadTeamMembers() {
+  try {
+    const res = await fetch(`${API_BASE}/team`);
+    const members = await res.json();
+
+    const teamBody = getElementByIdIgnoreCase("teamBody");
+    const assignSelect = getElementByIdIgnoreCase("assignSelect");
+
+    teamBody.innerHTML = "";
+    assignSelect.innerHTML = "";
+
+    members.forEach(member => {
+      // Add row to team table
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${member.name}</td>
+        <td>${member.email}</td>
+        <td>${member.team}</td>
+      `;
+      teamBody.appendChild(tr);
+
+      // Add to assign dropdown
+      const option = document.createElement("option");
+      option.value = member.name;
+      option.textContent = member.name;
+      assignSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error("⚠️ Failed to load team members:", err);
+  }
+}
+
+// =============================
+// ✅ Load Daily Tasks
+// =============================
+async function loadDailyTasks() {
+  try {
+    const res = await fetch(`${API_BASE}/tasks/daily`);
+    const data = await res.json();
+
+    renderTasks("today-tasks", data.today);
+    renderTasks("tomorrow-tasks", data.tomorrow);
+    renderTasks("upcoming-tasks", data.upcoming);
+  } catch (err) {
+    console.error("⚠️ Failed to load daily tasks:", err);
+  }
+}
+
+function renderTasks(containerId, tasks) {
+  const ul = getElementByIdIgnoreCase(containerId);
+  if (!ul) return;
+
+  ul.innerHTML = "";
+  tasks.forEach(task => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${task.name}</strong> (${task.status})
+      <br>
+      ${task.start} → ${task.end}
+      <br>
+      <button onclick="deleteTask('${task.id}')">❌ Delete</button>
+    `;
+    ul.appendChild(li);
+  });
+}
+
+// =============================
+// ✅ Add Task
+// =============================
+document.getElementById("smartsheetForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const task = {
-    taskname: document.getElementById("taskname").value,
-    assign: document.getElementById("assign").value,
-    progressSelect: document.getElementById("progressSelect").value,
-    startdate: document.getElementById("startdate").value,
-    enddate: document.getElementById("enddate").value,
+    name: getElementByIdIgnoreCase("taskname").value,
+    assign: getElementByIdIgnoreCase("assignSelect").value,
+    status: getElementByIdIgnoreCase("progressSelect").value,
+    start: getElementByIdIgnoreCase("startdate").value,
+    end: getElementByIdIgnoreCase("enddate").value,
   };
 
-  try {
-    let response = await fetch("http://127.0.0.1:8000/add_task/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(task),
-    });
+  await fetch(`${API_BASE}/tasks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(task),
+  });
 
-    if (!response.ok) throw new Error("❌ Failed to save task");
-
-    let result = await response.json();
-    console.log("✅ Saved on backend:", result);
-
-    addTaskToTable(result.task); // use saved version from backend
-
-    document.getElementById("smartsheetForm").reset();
-    closeForm();
-
-  } catch (err) {
-    console.error("❌ Error saving task:", err);
-    alert("❌ Failed to save task to backend!");
-  }
+  closeTaskForm();
+  loadDailyTasks();
 });
 
 // =============================
-// ✅ Load Tasks from Backend
+// ✅ Add Team Member
 // =============================
-window.onload = async function () {
-  try {
-    let response = await fetch("http://127.0.0.1:8000/get_tasks/");
-    if (!response.ok) throw new Error("❌ Failed to fetch tasks");
-    
-    let data = await response.json();
-    console.log("📥 Loaded tasks:", data);
+document.getElementById("teamMemberForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    if (data.tasks && Array.isArray(data.tasks)) {
-      data.tasks.forEach(task => addTaskToTable(task));
-    }
-  } catch (err) {
-    console.error("❌ Error loading tasks:", err);
-  }
-};
+  const member = {
+    name: getElementByIdIgnoreCase("memberName").value,
+    email: getElementByIdIgnoreCase("memberEmail").value,
+    team: getElementByIdIgnoreCase("memberTeam").value,
+  };
+
+  await fetch(`${API_BASE}/team`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(member),
+  });
+
+  closeTeamForm();
+  loadTeamMembers();
+});
 
 // =============================
-// ✅ Dashboard + Summary Counters
+// ✅ Delete Task
 // =============================
-let totalTasks = 0;
-let inProgress = 0;
-let completed = 0;
-let review = 0;
-
-function updateCounts(status) {
-  totalTasks++;
-  if (status === "In Progress") inProgress++;
-  if (status === "Done") completed++;
-  if (status === "Review") review++;
-
-  document.getElementById("db-total").innerText = totalTasks;
-  document.getElementById("db-inprogress").innerText = inProgress;
-  document.getElementById("db-completed").innerText = completed;
-  document.getElementById("db-review").innerText = review;
+async function deleteTask(taskId) {
+  await fetch(`${API_BASE}/tasks/${taskId}`, { method: "DELETE" });
+  loadDailyTasks();
 }
 
 // =============================
-// ✅ Daily Check-in
+// ✅ Page Load
 // =============================
-function addTaskToDailyCheckin(task) {
-  const today = new Date().toISOString().split("T")[0];
-  const taskDate = task.startdate;
-
-  let listElement;
-  if (taskDate === today) {
-    listElement = document.getElementById("today-tasks");
-  } else {
-    const tomorrow = new Date();
-    tomorrow.setDate(new Date().getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split("T")[0];
-
-    if (taskDate === tomorrowStr) {
-      listElement = document.getElementById("tomorrow-tasks");
-    } else {
-      listElement = document.getElementById("upcoming-tasks");
-    }
-  }
-
-  const li = document.createElement("li");
-  li.textContent = `${task.taskname} (${task.assign}) - ${task.progressSelect}`;
-  listElement.appendChild(li);
-}
+document.addEventListener("DOMContentLoaded", () => {
+  loadTeamMembers();
+  loadDailyTasks();
+});

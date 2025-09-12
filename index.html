@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="auth.js" defer></script>
+  <script src="main.js" defer></script>
+  <script>
+    // Check authentication on page load
+    if (!isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html" class="active">📊 Dashboard</a>
+      <a href="workspace.html">📁 Workspace</a>
+      <a href="daily.html">📅 Daily Check-in</a>
+      <a href="teams.html">👥 Teams</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <header class="header">
+      <h1>📋 Dashboard</h1>
+      <div class="header-actions">
+        <button onclick="location.href='add-task.html'">➕ Add Task</button>
+        <button onclick="location.href='add-team.html'">👥 Add Team Member</button>
+        <button onclick="logout()">🚪 Logout</button>
+      </div>
+    </header>
+
+    <section class="dashboard">
+      <div class="card">Total Tasks: <span id="db-total">0</span></div>
+      <div class="card">In Progress: <span id="db-inprogress">0</span></div>
+      <div class="card">Completed: <span id="db-completed">0</span></div>
+      <div class="card">Review: <span id="db-review">0</span></div>
+    </section>
+  </main>
+</body>
+</html>

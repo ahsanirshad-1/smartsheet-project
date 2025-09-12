@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Check-in</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="daily.js" defer></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="workspace.html">📁 Workspace</a>
+      <a href="daily.html" class="active">📅 Daily Check-in</a>
+      <a href="teams.html">👥 Teams</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <header class="header">
+      <h1>📅 Daily Check-in</h1>
+      <div class="header-actions">
+        <button onclick="openDailyForm()">➕ Add Daily Task</button>
+      </div>
+    </header>
+
+    <section class="daily-grid">
+      <div class="daily-card">
+        <h3>Today</h3>
+        <ul id="today-tasks"></ul>
+      </div>
+      <div class="daily-card">
+        <h3>Tomorrow</h3>
+        <ul id="tomorrow-tasks"></ul>
+      </div>
+      <div class="daily-card">
+        <h3>Upcoming</h3>
+        <ul id="upcoming-tasks"></ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- Daily Task Modal -->
+  <div id="dailyForm" class="modal">
+    <div class="modal-content">
+      <h2>Add Daily Task</h2>
+      <form id="dailyTaskForm">
+        <label>Task Name</label>
+        <input type="text" id="dailyTaskName" required>
+        <label>Assign To</label>
+        <select id="dailyTaskAssign" required>
+          <option value="">Select a member</option>
+        </select>
+        <label>Description</label>
+        <textarea id="dailyTaskDesc" required></textarea>
+        <label>Date</label>
+        <input type="date" id="dailyTaskDate" required>
+
+        <button type="submit">Save</button>
+        <button type="button" onclick="closeDailyForm()">Cancel</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

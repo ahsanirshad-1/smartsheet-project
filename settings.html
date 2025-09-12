@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task Manager - Settings</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="auth.js" defer></script>
+  <script>
+    // Check authentication on page load
+    if (!isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="workspace.html">📁 Workspace</a>
+      <a href="daily.html">📅 Daily Check-in</a>
+      <a href="teams.html">👥 Teams</a>
+      <a href="settings.html" class="active">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <header class="header">
+      <h1>⚙️ Settings</h1>
+      <div class="header-actions">
+        <button onclick="logout()">🚪 Logout</button>
+      </div>
+    </header>
+
+    <section class="settings-section">
+      <h2>User Preferences</h2>
+      <form id="settingsForm">
+        <label for="themeSelect">Theme</label>
+        <select id="themeSelect" name="theme">
+          <option value="light">Light</option>
+          <option value="dark" selected>Dark</option>
+        </select>
+
+        <label for="notificationsToggle">Enable Notifications</label>
+        <input type="checkbox" id="notificationsToggle" name="notifications" checked />
+
+        <button type="submit">Save Settings</button>
+      </form>
+      <div id="settingsMessage"></div>
+    </section>
+  </main>
+
+  <script>
+    // Load saved settings from localStorage
+    document.addEventListener('DOMContentLoaded', () => {
+      const theme = localStorage.getItem('theme') || 'dark';
+      const notifications = localStorage.getItem('notifications') === 'true';
+
+      document.getElementById('themeSelect').value = theme;
+      document.getElementById('notificationsToggle').checked = notifications;
+    });
+
+    // Save settings handler
+    document.getElementById('settingsForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const theme = document.getElementById('themeSelect').value;
+      const notifications = document.getElementById('notificationsToggle').checked;
+
+      localStorage.setItem('theme', theme);
+      localStorage.setItem('notifications', notifications);
+
+      const messageDiv = document.getElementById('settingsMessage');
+      messageDiv.textContent = 'Settings saved successfully!';
+      setTimeout(() => { messageDiv.textContent = ''; }, 3000);
+    });
+  </script>
+</body>
+</html>

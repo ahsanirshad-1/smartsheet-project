@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager - Workspace</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="workspace.js" defer></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="workspace.html" class="active">📁 Workspace</a>
+      <a href="daily.html">📅 Daily Check-in</a>
+      <a href="teams.html">👥 Teams</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <header class="header">
+      <h1>📁 Workspace</h1>
+      <div class="header-actions">
+        <button onclick="location.href='add-task.html'">➕ Add Task</button>
+      </div>
+    </header>
+
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th>Assign</th>
+          <th>Task</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="taskBody"></tbody>
+    </table>
+
+    <!-- Edit Task Modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h2>Edit Task</h2>
+        <form id="editForm">
+          <label>Task Name</label>
+          <input type="text" id="editTaskName" required>
+
+          <label>Assign To</label>
+          <input type="text" id="editAssign" required>
+
+          <label>Status</label>
+          <select id="editStatus">
+            <option>In Progress</option>
+            <option>Done</option>
+            <option>Review</option>
+            <option>Waiting</option>
+          </select>
+
+          <label>Start Date</label>
+          <input type="date" id="editStartDate" required>
+
+          <label>End Date</label>
+          <input type="date" id="editEndDate" required>
+
+          <button type="submit">Update Task</button>
+          <button type="button" onclick="closeEditModal()">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager - Teams</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="teams.js" defer></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="workspace.html">📁 Workspace</a>
+      <a href="daily.html">📅 Daily Check-in</a>
+      <a href="teams.html" class="active">👥 Teams</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <header class="header">
+      <h1>👥 Team Members</h1>
+      <div class="header-actions">
+        <button onclick="location.href='add-team.html'">➕ Add Team Member</button>
+      </div>
+    </header>
+
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Team</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="teamBody"></tbody>
+    </table>
+  </main>
+</body>
+</html>
