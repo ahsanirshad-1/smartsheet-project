@@ -16,8 +16,8 @@ async function loadTeams() {
         <td>${member.email}</td>
         <td>${member.team}</td>
         <td>
-          <button class="action-btn action-edit" onclick="editMember(this)">Edit</button>
-          <button class="action-btn action-delete" onclick="deleteMember(this)">Delete</button>
+          <button class="action-btn action-edit" onclick="editMember(this)" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+          <button class="action-btn action-delete" onclick="deleteMember(this)" title="Delete"><i class="fas fa-trash"></i></button>
         </td>
       `;
       tbody.appendChild(tr);

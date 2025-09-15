@@ -1,49 +1,113 @@
-// =============================
-// 📊 Dashboard Script (main.js)
-// =============================
+document.addEventListener("DOMContentLoaded", () => {
+  loadTeamMembers();
+  loadTaskStatus();
+  updateDashboardCounts();
 
-// Backend API base URL
-const API_URL = "http://127.0.0.1:8000";
+  document.getElementById("teamFilter").addEventListener("change", () => {
+    loadTaskStatus();
+    updateDashboardCounts();
+  });
+});
 
-// Function to fetch tasks and update dashboard
-async function loadDashboard() {
+async function loadTeamMembers() {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/team");
+    if (!res.ok) {
+      console.error("Failed to fetch team members");
+      return;
+    }
+    const members = await res.json();
+    const select = document.getElementById("teamFilter");
+
+    members.forEach(member => {
+      const option = document.createElement("option");
+      option.value = member.name;
+      option.textContent = member.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error loading team members:", err);
+  }
+}
+
+async function loadTaskStatus() {
   try {
     const token = localStorage.getItem('authToken');
-    const [tasksRes, dailyRes] = await Promise.all([
-      fetch(`${API_URL}/tasks`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }),
-      fetch(`${API_URL}/daily`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-    ]);
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-    const tasks = await tasksRes.json();
-    const dailyTasks = await dailyRes.json();
+    const res = await fetch("http://127.0.0.1:8000/tasks", { headers });
+    if (!res.ok) {
+      console.error("Failed to fetch tasks");
+      return;
+    }
+    const tasks = await res.json();
 
-    // Combine tasks
-    const allTasks = [...tasks, ...dailyTasks.map(t => ({ ...t, status: "Daily" }))];
+    const filterMember = document.getElementById("teamFilter").value;
 
-    // Count tasks by status
-    let total = allTasks.length;
-    let inProgress = allTasks.filter(t => t.status === "In Progress").length;
-    let completed = allTasks.filter(t => t.status === "Done" || t.status === "Completed").length;
-    let review = allTasks.filter(t => t.status === "Review").length;
+    // Filter tasks by selected team member if any
+    const filteredTasks = filterMember ? tasks.filter(t => t.assign === filterMember) : tasks;
 
-    // Update UI
+    // Group tasks by status
+    const statusGroups = filteredTasks.reduce((groups, task) => {
+      const status = task.status || "Unknown";
+      if (!groups[status]) groups[status] = [];
+      groups[status].push(task);
+      return groups;
+    }, {});
+
+    const container = document.getElementById("taskStatusBody");
+    container.innerHTML = "";
+
+    for (const [status, tasks] of Object.entries(statusGroups)) {
+      const card = document.createElement("div");
+      card.className = "task-card";
+
+      const title = document.createElement("h3");
+      title.textContent = status;
+      card.appendChild(title);
+
+      tasks.forEach(task => {
+        const p = document.createElement("p");
+        p.textContent = `${task.taskname} (Assigned to: ${task.assign || "-"})`;
+        card.appendChild(p);
+      });
+
+      container.appendChild(card);
+    }
+  } catch (err) {
+    console.error("Error loading task status:", err);
+  }
+}
+
+async function updateDashboardCounts() {
+  try {
+    const token = localStorage.getItem('authToken');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+    const res = await fetch("http://127.0.0.1:8000/tasks", { headers });
+    if (!res.ok) {
+      console.error("Failed to fetch tasks");
+      return;
+    }
+    const tasks = await res.json();
+
+    const filterMember = document.getElementById("teamFilter").value;
+
+    // Filter tasks by selected team member if any
+    const filteredTasks = filterMember ? tasks.filter(t => t.assign === filterMember) : tasks;
+
+    // Calculate counts
+    const total = filteredTasks.length;
+    const inProgress = filteredTasks.filter(t => t.status === "In Progress").length;
+    const completed = filteredTasks.filter(t => t.status === "Done").length;
+    const review = filteredTasks.filter(t => t.status === "Review").length;
+
+    // Update dashboard UI
     document.getElementById("db-total").textContent = total;
     document.getElementById("db-inprogress").textContent = inProgress;
     document.getElementById("db-completed").textContent = completed;
     document.getElementById("db-review").textContent = review;
-
-  } catch (error) {
-    console.error("❌ Error loading dashboard:", error);
+  } catch (err) {
+    console.error("Error updating dashboard counts:", err);
   }
 }
-
-// Run on page load
-document.addEventListener("DOMContentLoaded", loadDashboard);

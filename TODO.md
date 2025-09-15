@@ -1,0 +1,4 @@
+- [x] Add FontAwesome CDN to workspace.html
+- [x] Add FontAwesome CDN to teams.html
+- [x] Update workspace.js to replace edit and delete button text with FontAwesome icons
+- [x] Update teams.js to replace edit and delete button text with FontAwesome icons

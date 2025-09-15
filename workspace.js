@@ -46,8 +46,8 @@ function renderTasks(tasks) {
       <td>${task.enddate}</td>
       <td>${task.status}</td>
       <td>
-        <button class="action-btn action-edit" onclick="editTask(this)">Edit</button>
-        <button class="action-btn action-delete" onclick="deleteTask(this)">Delete</button>
+        <button class="action-btn action-edit" onclick="editTask(this)" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+        <button class="action-btn action-delete" onclick="deleteTask(this)" title="Delete"><i class="fas fa-trash"></i></button>
       </td>
     `;
     tbody.appendChild(tr);

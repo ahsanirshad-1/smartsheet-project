@@ -420,6 +420,53 @@ main {
   color: #f0f0f0;
 }
 
+/* Dashboard Task Status Cards */
+.task-status-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.task-status-cards .task-card {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 1rem;
+  width: 220px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-status-cards .task-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #38bdf8;
+}
+
+.task-status-cards .task-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+/* Filter dropdown */
+#teamFilter {
+  margin: 0.5rem 0 1rem 0;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 1rem;
+  width: 220px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
 .modal-content button[type="button"]:hover {
   background: #666;
 }

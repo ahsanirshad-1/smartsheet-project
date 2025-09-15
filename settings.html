@@ -5,36 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Task Manager - Settings</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="auth.js" defer></script>
-  <script>
-    // Check authentication on page load
-    if (!isLoggedIn()) {
-      window.location.href = 'login.html';
-    }
-  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="settings.js" defer></script>
 </head>
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
     <h2>Task Manager</h2>
     <nav>
-      <a href="index.html">📊 Dashboard</a>
-      <a href="workspace.html">📁 Workspace</a>
-      <a href="daily.html">📅 Daily Check-in</a>
-      <a href="teams.html">👥 Teams</a>
-      <a href="settings.html" class="active">⚙️ Settings</a>
+      <a href="index.html"><i class="fas fa-chart-bar"></i> Dashboard</a>
+      <a href="workspace.html"><i class="fas fa-folder"></i> Workspace</a>
+      <a href="daily.html"><i class="fas fa-calendar-day"></i> Daily Check-in</a>
+      <a href="teams.html"><i class="fas fa-users"></i> Teams</a>
+      <a href="settings.html" class="active"><i class="fas fa-cog"></i> Settings</a>
     </nav>
   </aside>
 
   <!-- Main Content -->
   <main>
     <header class="header">
-      <h1>⚙️ Settings</h1>
+      <h1><i class="fas fa-cog"></i> Settings</h1>
       <div class="header-actions">
-        <button onclick="logout()">🚪 Logout</button>
+        <button onclick="logout()"><i class="fas fa-door-open"></i> Logout</button>
       </div>
     </header>
 
+    <!-- Settings content here -->
     <section class="settings-section">
       <h2>User Preferences</h2>
       <form id="settingsForm">
@@ -47,35 +43,54 @@
         <label for="notificationsToggle">Enable Notifications</label>
         <input type="checkbox" id="notificationsToggle" name="notifications" checked />
 
+        <label for="languageSelect">Language</label>
+        <select id="languageSelect" name="language">
+          <option value="en" selected>English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+        </select>
+
+        <label for="timezoneSelect">Timezone</label>
+        <select id="timezoneSelect" name="timezone">
+          <option value="UTC-12">UTC-12</option>
+          <option value="UTC-11">UTC-11</option>
+          <option value="UTC-10">UTC-10</option>
+          <option value="UTC-9">UTC-9</option>
+          <option value="UTC-8">UTC-8</option>
+          <option value="UTC-7">UTC-7</option>
+          <option value="UTC-6">UTC-6</option>
+          <option value="UTC-5" selected>UTC-5 (Eastern Time)</option>
+          <option value="UTC-4">UTC-4</option>
+          <option value="UTC-3">UTC-3</option>
+          <option value="UTC-2">UTC-2</option>
+          <option value="UTC-1">UTC-1</option>
+          <option value="UTC+0">UTC+0 (GMT)</option>
+          <option value="UTC+1">UTC+1</option>
+          <option value="UTC+2">UTC+2</option>
+          <option value="UTC+3">UTC+3</option>
+          <option value="UTC+4">UTC+4</option>
+          <option value="UTC+5">UTC+5</option>
+          <option value="UTC+6">UTC+6</option>
+          <option value="UTC+7">UTC+7</option>
+          <option value="UTC+8">UTC+8</option>
+          <option value="UTC+9">UTC+9</option>
+          <option value="UTC+10">UTC+10</option>
+          <option value="UTC+11">UTC+11</option>
+          <option value="UTC+12">UTC+12</option>
+        </select>
+
+        <label for="dateFormatSelect">Date Format</label>
+        <select id="dateFormatSelect" name="dateFormat">
+          <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+          <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+          <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+        </select>
+
         <button type="submit">Save Settings</button>
       </form>
-      <div id="settingsMessage"></div>
     </section>
+
   </main>
-
-  <script>
-    // Load saved settings from localStorage
-    document.addEventListener('DOMContentLoaded', () => {
-      const theme = localStorage.getItem('theme') || 'dark';
-      const notifications = localStorage.getItem('notifications') === 'true';
-
-      document.getElementById('themeSelect').value = theme;
-      document.getElementById('notificationsToggle').checked = notifications;
-    });
-
-    // Save settings handler
-    document.getElementById('settingsForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const theme = document.getElementById('themeSelect').value;
-      const notifications = document.getElementById('notificationsToggle').checked;
-
-      localStorage.setItem('theme', theme);
-      localStorage.setItem('notifications', notifications);
-
-      const messageDiv = document.getElementById('settingsMessage');
-      messageDiv.textContent = 'Settings saved successfully!';
-      setTimeout(() => { messageDiv.textContent = ''; }, 3000);
-    });
-  </script>
 </body>
 </html>

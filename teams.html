@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Task Manager - Teams</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <script src="teams.js" defer></script>
 </head>
 <body>
@@ -12,20 +13,20 @@
   <aside class="sidebar">
     <h2>Task Manager</h2>
     <nav>
-      <a href="index.html">📊 Dashboard</a>
-      <a href="workspace.html">📁 Workspace</a>
-      <a href="daily.html">📅 Daily Check-in</a>
-      <a href="teams.html" class="active">👥 Teams</a>
-      <a href="settings.html">⚙️ Settings</a>
+      <a href="index.html"><i class="fas fa-chart-bar"></i> Dashboard</a>
+      <a href="workspace.html"><i class="fas fa-folder"></i> Workspace</a>
+      <a href="daily.html"><i class="fas fa-calendar-day"></i> Daily Check-in</a>
+      <a href="teams.html" class="active"><i class="fas fa-users"></i> Teams</a>
+      <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
     </nav>
   </aside>
 
   <!-- Main Content -->
   <main>
     <header class="header">
-      <h1>👥 Team Members</h1>
+      <h1><i class="fas fa-users"></i> Team Members</h1>
       <div class="header-actions">
-        <button onclick="location.href='add-team.html'">➕ Add Team Member</button>
+        <button onclick="location.href='add-team.html'"><i class="fas fa-plus"></i> Add Team Member</button>
       </div>
     </header>
 

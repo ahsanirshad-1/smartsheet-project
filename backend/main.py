@@ -144,6 +144,8 @@ async def get_tasks(current_user: str = Depends(get_current_user)):
 
 @app.post("/tasks")
 async def create_task(task: Task, current_user: str = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
     task_doc = {
         "taskname": task.taskname,
         "assign": task.assign,
