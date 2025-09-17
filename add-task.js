@@ -21,7 +21,7 @@ getElementByIdIgnoreCase("taskForm").addEventListener("submit", async (e) => {
 
   // Fetch team members to get email for the assigned member
   try {
-    const emailRes = await fetch("http://127.0.0.1:8000/team");
+    const emailRes = await fetch("http://localhost:8000/teams");
     if (!emailRes.ok) {
       showToast("❌ Failed to load teams for email");
       return;
@@ -43,7 +43,7 @@ getElementByIdIgnoreCase("taskForm").addEventListener("submit", async (e) => {
     const token = localStorage.getItem('authToken');
     const headers = { "Content-Type": "application/json" };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch("http://127.0.0.1:8000/tasks", {
+    const res = await fetch("http://localhost:8000/tasks", {
       method: "POST",
       headers,
       body: JSON.stringify(taskData)
@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function loadMembers() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/team");
+    const res = await fetch("http://localhost:8000/teams");
     const members = await res.json();
     const select = getElementByIdIgnoreCase("assign");
     members.forEach(member => {

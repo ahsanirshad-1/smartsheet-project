@@ -1,20 +1,44 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pymongo import MongoClient
+import time
 
-# Database setup
-mongo_client = MongoClient('mongodb://mongodb:27017/')
+# Database setup with retry logic
+def connect_to_mongodb():
+    max_retries = 10
+    retry_delay = 2
+    for attempt in range(max_retries):
+        try:
+            mongo_client = MongoClient(
+                'mongodb:27017',
+                serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=5000,
+                socketTimeoutMS=5000
+            )
+            # Test the connection
+            mongo_client.admin.command('ping')
+            print("Successfully connected to MongoDB")
+            return mongo_client
+        except Exception as e:
+            print(f"MongoDB connection attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+            else:
+                raise e
+
+mongo_client = connect_to_mongodb()
 mongo_db = mongo_client['task_manager']
 users_col = mongo_db['users']
 tasks_col = mongo_db['tasks']
 daily_col = mongo_db['daily']
-team_col = mongo_db['team']
+team_col = mongo_db['teams']
 
 # FastAPI app
 app = FastAPI()
@@ -119,25 +143,44 @@ async def register(user: UserCreate):
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
+import logging
+
+logger = logging.getLogger("uvicorn.error")
+
 @app.post("/token", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    logger.info(f"Login attempt for user: {form_data.username}")
     user = users_col.find_one({"username": form_data.username})
-    if not user or not verify_password(form_data.password, user["hashed_password"]):
+    if not user:
+        logger.warning(f"User not found: {form_data.username}")
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    if not verify_password(form_data.password, user["hashed_password"]):
+        logger.warning(f"Invalid password for user: {form_data.username}")
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     access_token = create_access_token(data={"sub": form_data.username})
+    logger.info(f"User logged in successfully: {form_data.username}")
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/tasks", response_model=List[Task])
-async def get_tasks(current_user: str = Depends(get_current_user)):
+async def get_tasks(status: Optional[str] = Query(None), assign: Optional[str] = Query(None), startdate: Optional[str] = Query(None), enddate: Optional[str] = Query(None)):
+    query = {}
+    if status:
+        query["status"] = status
+    if assign:
+        query["assign"] = assign
+    if startdate:
+        query["startdate"] = {"$gte": startdate}
+    if enddate:
+        query["enddate"] = {"$lte": enddate}
     tasks = []
-    for task_doc in tasks_col.find():
+    for task_doc in tasks_col.find(query):
         tasks.append(Task(
             taskname=task_doc.get("taskname"),
             assign=task_doc.get("assign"),
             status=task_doc.get("status"),
             startdate=task_doc.get("startdate"),
             enddate=task_doc.get("enddate"),
-            email=task_doc.get("email"),
+            email=task_doc.get("email") or "",
             send_reminder=task_doc.get("sendReminder", False)
         ))
     return tasks
@@ -184,8 +227,8 @@ async def get_daily_tasks(current_user: str = Depends(get_current_user)):
     for task_doc in daily_col.find():
         tasks.append(DailyTask(
             name=task_doc.get("name"),
-            assign=task_doc.get("assign"),
-            description=task_doc.get("description"),
+            assign=task_doc.get("assign") or "",
+            description=task_doc.get("description") or "",
             date=task_doc.get("date")
         ))
     return tasks
@@ -218,8 +261,8 @@ async def delete_daily_task(taskname: str, current_user: str = Depends(get_curre
     daily_col.delete_one({"name": taskname})
     return {"message": "Daily task deleted"}
 
-@app.get("/team", response_model=List[TeamMember])
-async def get_team():
+@app.get("/teams", response_model=List[TeamMember])
+async def get_teams():
     members = []
     for member_doc in team_col.find():
         members.append(TeamMember(
@@ -229,7 +272,7 @@ async def get_team():
         ))
     return members
 
-@app.post("/team")
+@app.post("/teams")
 async def create_team_member(member: TeamMember):
     if team_col.find_one({"name": member.name}):
         raise HTTPException(status_code=400, detail="Member name already exists")
@@ -241,7 +284,19 @@ async def create_team_member(member: TeamMember):
     team_col.insert_one(member_doc)
     return {"message": "Team member added"}
 
-@app.delete("/team/{name}")
+@app.put("/teams/{name}")
+async def update_team_member(name: str, member: TeamMember):
+    team_col.update_one(
+        {"name": name},
+        {"$set": {
+            "name": member.name,
+            "email": member.email,
+            "team": member.team
+        }}
+    )
+    return {"message": "Team member updated"}
+
+@app.delete("/teams/{name}")
 async def delete_team_member(name: str):
     team_col.delete_one({"name": name})
     return {"message": "Team member deleted"}

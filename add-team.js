@@ -1,4 +1,4 @@
-document.getElementById("teamForm").addEventListener("submit", async (e) => {
+-document.getElementById("teamForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const member = {
@@ -8,7 +8,7 @@ document.getElementById("teamForm").addEventListener("submit", async (e) => {
   };
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/team", {
+    const res = await fetch("http://localhost:8000/teams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(member)

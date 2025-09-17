@@ -1,8 +1,8 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://localhost:8000";
 
 async function loadTeams() {
   try {
-    const res = await fetch(`${API_URL}/team`);
+    const res = await fetch(`${API_URL}/teams`);
     const members = await res.json();
 
     const tbody = document.getElementById("teamBody");
@@ -36,7 +36,7 @@ async function deleteMember(button) {
   if (!confirm("Are you sure you want to delete this member?")) return;
 
   try {
-    const res = await fetch(`${API_URL}/team/${encodeURIComponent(name)}`, { method: "DELETE" });
+    const res = await fetch(`${API_URL}/teams/${encodeURIComponent(name)}`, { method: "DELETE" });
     if (res.ok) {
       showToast("🗑️ Member deleted");
       loadTeams();
@@ -50,8 +50,55 @@ async function deleteMember(button) {
 }
 
 function editMember(button) {
-  // Implement edit if needed
-  alert("Edit feature coming soon.");
+  const tr = button.closest("tr");
+  if (!tr) return;
+
+  const name = tr.children[0].textContent;
+  const email = tr.children[1].textContent;
+  const team = tr.children[2].textContent;
+
+  document.getElementById("editName").value = name;
+  document.getElementById("editEmail").value = email;
+  document.getElementById("editTeam").value = team;
+
+  document.getElementById("editModal").style.display = "flex";
+}
+
+function closeEditModal() {
+  document.getElementById("editModal").style.display = "none";
+}
+
+async function handleEditSubmit(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("editName").value.trim();
+  const email = document.getElementById("editEmail").value.trim();
+  const team = document.getElementById("editTeam").value.trim();
+
+  const updatedMember = {
+    name: name,
+    email: email,
+    team: team
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/teams/${encodeURIComponent(name)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedMember)
+    });
+
+    if (res.ok) {
+      showToast("✅ Member updated");
+      closeEditModal();
+      loadTeams();
+    } else {
+      showToast("❌ Failed to update member");
+    }
+  } catch (err) {
+    console.error("Error updating member:", err);
+    showToast("⚠️ Server error");
+  }
 }
 
 function showToast(msg) {
@@ -61,5 +108,9 @@ function showToast(msg) {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("editForm").addEventListener("submit", handleEditSubmit);
+});
 
 document.addEventListener("DOMContentLoaded", loadTeams);

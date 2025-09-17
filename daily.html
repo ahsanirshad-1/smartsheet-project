@@ -49,8 +49,9 @@
   <!-- Daily Task Modal -->
   <div id="dailyForm" class="modal">
     <div class="modal-content">
-      <h2>Add Daily Task</h2>
+      <h2 id="formTitle">Add Daily Task</h2>
       <form id="dailyTaskForm">
+        <input type="hidden" id="editingTaskName">
         <label>Task Name</label>
         <input type="text" id="dailyTaskName" required>
         <label>Assign To</label>
@@ -62,7 +63,7 @@
         <label>Date</label>
         <input type="date" id="dailyTaskDate" required>
 
-        <button type="submit">Save</button>
+        <button type="submit" id="submitBtn">Save</button>
         <button type="button" onclick="closeDailyForm()">Cancel</button>
       </form>
     </div>

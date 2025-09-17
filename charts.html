@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task Manager - Charts</title>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html"><i class="fas fa-chart-bar"></i> Dashboard</a>
+      <a href="#" id="notifications-link"><i class="fas fa-bell"></i> Notifications</a>
+      <a href="charts.html" class="active"><i class="fas fa-chart-line"></i> Charts</a>
+      <a href="workspace.html"><i class="fas fa-folder"></i> Workspace</a>
+      <a href="daily.html"><i class="fas fa-calendar-day"></i> Daily Check-in</a>
+      <a href="teams.html"><i class="fas fa-users"></i> Teams</a>
+      <a href="#" id="settings-link"><i class="fas fa-cog"></i> Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <header class="header">
+      <h1><i class="fas fa-chart-line"></i> Charts & Analytics</h1>
+      <div class="header-actions">
+        <button onclick="location.href='index.html'">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </button>
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Charts Section -->
+    <section class="charts-section">
+
+      <!-- Filter Controls -->
+      <div class="filter-controls" style="margin-bottom: 20px; color: #e2e8f0;">
+        <label for="status-filter">Status:</label>
+        <select id="status-filter">
+          <option value="">All</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Done">Done</option>
+          <option value="Review">Review</option>
+          <option value="Waiting">Waiting</option>
+        </select>
+
+        <label for="assignee-filter" style="margin-left: 20px;">Assignee:</label>
+        <select id="assignee-filter">
+          <option value="">All</option>
+          <!-- Options populated dynamically -->
+        </select>
+
+        <label for="start-date-filter" style="margin-left: 20px;">Start Date:</label>
+        <input type="date" id="start-date-filter" />
+
+        <label for="end-date-filter" style="margin-left: 20px;">End Date:</label>
+        <input type="date" id="end-date-filter" />
+      </div>
+
+      <div class="charts-container">
+        <div class="chart-wrapper">
+          <h3><i class="fas fa-chart-pie"></i> Task Status Distribution</h3>
+          <canvas id="statusChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <h3><i class="fas fa-chart-line"></i> Weekly Progress</h3>
+          <canvas id="progressChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Additional Charts -->
+      <div class="charts-container">
+        <div class="chart-wrapper">
+          <h3><i class="fas fa-calendar-alt"></i> Tasks by Month</h3>
+          <canvas id="monthlyChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <h3><i class="fas fa-users"></i> Tasks by Assignee</h3>
+          <canvas id="assigneeChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="panel">
+      <h2>Settings</h2>
+      <div class="settings-content">
+        <div class="setting-item">
+          <label for="theme-select">Theme:</label>
+          <select id="theme-select">
+            <option value="light">Light</option>
+            <option value="dark" selected>Dark</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="notifications-toggle">Enable Notifications:</label>
+          <input type="checkbox" id="notifications-toggle" checked>
+        </div>
+        <div class="setting-item">
+          <label for="auto-save-toggle">Auto Save:</label>
+          <input type="checkbox" id="auto-save-toggle" checked>
+        </div>
+        <button id="save-settings">Save Settings</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    // Apply saved theme on load
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    if (savedTheme === "light") {
+      document.body.classList.add("light-theme");
+      document.body.classList.remove("dark-theme");
+    } else {
+      document.body.classList.add("dark-theme");
+      document.body.classList.remove("light-theme");
+    }
+
+    // Panel toggling
+    document.getElementById('settings-link').addEventListener('click', function(e) {
+      e.preventDefault();
+      togglePanel('settings-panel');
+    });
+
+    function togglePanel(panelId) {
+      const panel = document.getElementById(panelId);
+      const isVisible = panel.style.display === 'block';
+      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+      if (!isVisible) {
+        panel.style.display = 'block';
+      }
+    }
+
+    // Initialize Charts
+    window.statusCtx = document.getElementById('statusChart').getContext('2d');
+    window.statusChart = new Chart(window.statusCtx, {
+      type: 'pie',
+      data: {
+        labels: ['In Progress', 'Done', 'Review', 'Waiting'],
+        datasets: [{
+          data: [0, 0, 0, 0],
+          backgroundColor: ['#f59e0b', '#10b981', '#8b5cf6', '#6b7280'],
+          borderWidth: 2,
+          borderColor: '#1e293b'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 14
+              }
+            }
+          }
+        }
+      }
+    });
+
+    window.progressCtx = document.getElementById('progressChart').getContext('2d');
+    window.progressChart = new Chart(window.progressCtx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Tasks Completed',
+          data: [0, 0, 0, 0, 0, 0, 0],
+          borderColor: '#38bdf8',
+          backgroundColor: 'rgba(56, 189, 248, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#e2e8f0'
+            },
+            grid: {
+              color: 'rgba(226, 232, 240, 0.1)'
+            }
+          },
+          x: {
+            ticks: {
+              color: '#e2e8f0'
+            },
+            grid: {
+              color: 'rgba(226, 232, 240, 0.1)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#e2e8f0'
+            }
+          }
+        }
+      }
+    });
+
+    // Monthly Chart
+    window.monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    window.monthlyChart = new Chart(window.monthlyCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Tasks Created',
+          data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          backgroundColor: 'rgba(56, 189, 248, 0.6)',
+          borderColor: '#38bdf8',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#e2e8f0'
+            },
+            grid: {
+              color: 'rgba(226, 232, 240, 0.1)'
+            }
+          },
+          x: {
+            ticks: {
+              color: '#e2e8f0'
+            },
+            grid: {
+              color: 'rgba(226, 232, 240, 0.1)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#e2e8f0'
+            }
+          }
+        }
+      }
+    });
+
+    // Assignee Chart
+    window.assigneeCtx = document.getElementById('assigneeChart').getContext('2d');
+    window.assigneeChart = new Chart(window.assigneeCtx, {
+      type: 'doughnut',
+      data: {
+        labels: [],
+        datasets: [{
+          data: [],
+          backgroundColor: [
+            '#38bdf8', '#f59e0b', '#10b981', '#8b5cf6',
+            '#ef4444', '#f97316', '#eab308', '#22c55e'
+          ],
+          borderWidth: 2,
+          borderColor: '#1e293b'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Load chart data
+    loadChartData();
+
+    // Modify loadChartData to include filters
+    async function loadChartData() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        // Read filter values
+        const status = document.getElementById('status-filter').value;
+        const assign = document.getElementById('assignee-filter').value;
+        const startDate = document.getElementById('start-date-filter').value;
+        const endDate = document.getElementById('end-date-filter').value;
+
+        // Build query params
+        const params = new URLSearchParams();
+        if (status) params.append('status', status);
+        if (assign) params.append('assign', assign);
+        if (startDate) params.append('startdate', startDate);
+        if (endDate) params.append('enddate', endDate);
+
+        const url = `http://localhost:8000/tasks?${params.toString()}`;
+
+        const res = await fetch(url, { headers });
+        if (!res.ok) {
+          console.error("Failed to fetch tasks for charts");
+          return;
+        }
+        const tasks = await res.json();
+
+        // Update all charts
+        updateStatusChart(tasks);
+        updateProgressChart(tasks);
+        updateMonthlyChart(tasks);
+        updateAssigneeChart(tasks);
+
+      } catch (err) {
+        console.error("Error loading chart data:", err);
+      }
+    }
+
+    // Update statusChart data dynamically
+    function updateStatusChart(tasks) {
+      const statusCounts = {
+        "In Progress": 0,
+        "Done": 0,
+        "Review": 0,
+        "Waiting": 0
+      };
+      tasks.forEach(task => {
+        const status = task.status;
+        if (statusCounts.hasOwnProperty(status)) {
+          statusCounts[status]++;
+        } else {
+          statusCounts["Waiting"]++;
+        }
+      });
+      window.statusChart.data.datasets[0].data = [
+        statusCounts["In Progress"],
+        statusCounts["Done"],
+        statusCounts["Review"],
+        statusCounts["Waiting"]
+      ];
+      window.statusChart.update();
+    }
+
+    // Update progressChart data dynamically
+    function updateProgressChart(tasks) {
+      const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+      tasks.forEach(task => {
+        if (task.status === "Done" && task.enddate) {
+          const date = new Date(task.enddate);
+          const day = date.getDay();
+          const index = day === 0 ? 6 : day - 1;
+          dayCounts[index]++;
+        }
+      });
+      window.progressChart.data.datasets[0].data = dayCounts;
+      window.progressChart.update();
+    }
+
+    // Update monthly chart
+    function updateMonthlyChart(tasks) {
+      const monthCounts = new Array(12).fill(0);
+      tasks.forEach(task => {
+        if (task.startdate) {
+          const date = new Date(task.startdate);
+          const month = date.getMonth();
+          monthCounts[month]++;
+        }
+      });
+      window.monthlyChart.data.datasets[0].data = monthCounts;
+      window.monthlyChart.update();
+    }
+
+    // Update assignee chart
+    function updateAssigneeChart(tasks) {
+      const assigneeCounts = {};
+      tasks.forEach(task => {
+        const assignee = task.assign || "Unassigned";
+        assigneeCounts[assignee] = (assigneeCounts[assignee] || 0) + 1;
+      });
+
+      const labels = Object.keys(assigneeCounts);
+      const data = Object.values(assigneeCounts);
+
+      window.assigneeChart.data.labels = labels;
+      window.assigneeChart.data.datasets[0].data = data;
+      window.assigneeChart.update();
+    }
+
+    // Populate assignee filter dynamically
+    async function populateAssigneeFilter() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch("http://localhost:8000/tasks", { headers });
+        if (!res.ok) {
+          console.error("Failed to fetch tasks for assignee filter");
+          return;
+        }
+        const tasks = await res.json();
+        const assignees = new Set();
+        tasks.forEach(task => {
+          if (task.assign) {
+            assignees.add(task.assign);
+          }
+        });
+        const assigneeFilter = document.getElementById('assignee-filter');
+        assigneeFilter.innerHTML = '<option value="">All</option>';
+        assignees.forEach(assignee => {
+          const option = document.createElement('option');
+          option.value = assignee;
+          option.textContent = assignee;
+          assigneeFilter.appendChild(option);
+        });
+      } catch (err) {
+        console.error("Error loading assignees:", err);
+      }
+    }
+
+    // Add event listeners to filters to reload charts on change
+    document.getElementById('status-filter').addEventListener('change', loadChartData);
+    document.getElementById('assignee-filter').addEventListener('change', loadChartData);
+    document.getElementById('start-date-filter').addEventListener('change', loadChartData);
+    document.getElementById('end-date-filter').addEventListener('change', loadChartData);
+
+    // Populate assignee filter on page load
+    populateAssigneeFilter();
+
+    // Settings
+    document.getElementById('save-settings').addEventListener('click', function() {
+      const theme = document.getElementById('theme-select').value;
+      const notifications = document.getElementById('notifications-toggle').checked;
+      const autoSave = document.getElementById('auto-save-toggle').checked;
+
+      localStorage.setItem('theme', theme);
+
+      // Apply theme
+      if (theme === "light") {
+        document.body.classList.add("light-theme");
+        document.body.classList.remove("dark-theme");
+      } else {
+        document.body.classList.add("dark-theme");
+        document.body.classList.remove("light-theme");
+      }
+
+      console.log('Settings saved:', { theme, notifications, autoSave });
+      alert('Settings saved!');
+    });
+
+    // Auto-refresh charts every 30 seconds
+    setInterval(loadChartData, 30000);
+  </script>
+</body>
+</html>

@@ -34,7 +34,7 @@ function closeTeamForm() {
 // =============================
 async function loadTeamMembers() {
   try {
-    const res = await fetch(`${API_BASE}/team`);
+    const res = await fetch(`${API_BASE}/teams`);
     const members = await res.json();
 
     const teamBody = getElementByIdIgnoreCase("teamBody");
@@ -134,7 +134,7 @@ document.getElementById("teamMemberForm").addEventListener("submit", async (e) =
     team: getElementByIdIgnoreCase("memberTeam").value,
   };
 
-  await fetch(`${API_BASE}/team`, {
+  await fetch(`${API_BASE}/teams`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(member),

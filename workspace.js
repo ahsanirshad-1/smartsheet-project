@@ -1,3 +1,17 @@
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.body.classList.add("light-theme");
+    document.body.classList.remove("dark-theme");
+  } else {
+    document.body.classList.add("dark-theme");
+    document.body.classList.remove("light-theme");
+  }
+}
+
+// Apply saved theme on load
+const savedTheme = localStorage.getItem("theme") || "dark";
+applyTheme(savedTheme);
+
 let allTasks = [];
 
 async function loadTasks() {
@@ -6,8 +20,8 @@ async function loadTasks() {
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
     const [tasksRes, dailyRes] = await Promise.all([
-      fetch("http://127.0.0.1:8000/tasks", { headers }),
-      fetch("http://127.0.0.1:8000/daily", { headers })
+      fetch("http://localhost:8000/tasks", { headers }),
+      fetch("http://localhost:8000/daily", { headers })
     ]);
 
     const tasks = await tasksRes.json();

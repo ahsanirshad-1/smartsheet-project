@@ -58,7 +58,7 @@ async function login(username, password) {
     formData.append('username', username);
     formData.append('password', password);
 
-    const res = await fetch('http://127.0.0.1:8000/token', {
+    const res = await fetch('http://localhost:8000/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData
@@ -96,7 +96,7 @@ function extractErrorMessage(detail) {
 // Function to signup
 async function signup(username, email, password) {
   try {
-    const res = await fetch('http://127.0.0.1:8000/register', {
+    const res = await fetch('http://localhost:8000/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password })

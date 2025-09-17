@@ -41,6 +41,26 @@
       </thead>
       <tbody id="teamBody"></tbody>
     </table>
+
+    <!-- Edit Team Member Modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h2>Edit Team Member</h2>
+        <form id="editForm">
+          <label>Name</label>
+          <input type="text" id="editName" required />
+
+          <label>Email</label>
+          <input type="email" id="editEmail" required />
+
+          <label>Team</label>
+          <input type="text" id="editTeam" required />
+
+          <button type="submit">Update Member</button>
+          <button type="button" onclick="closeEditModal()">Cancel</button>
+        </form>
+      </div>
+    </div>
   </main>
 </body>
 </html>
