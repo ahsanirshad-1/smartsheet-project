@@ -1,7 +1,8 @@
-# TODO: Add Filter in Chart Page
+# TODO: Update Dashboard to Display Tasks Separately by Team
 
-- [x] Update backend/main.py /tasks endpoint to accept optional query parameters (status, assign, startdate, enddate) and apply filters in MongoDB query.
-- [x] Add filter UI controls in charts.html (status dropdown, assignee dropdown, start/end date inputs) above the charts section.
-- [x] Modify charts.html JavaScript to populate assignee dropdown dynamically from all tasks.
-- [x] Update loadChartData function to read filter values and send as query parameters to /tasks API.
-- [x] Add event listeners on filter controls to reload chart data on change.
+## Steps to Complete
+
+1. [x] Modify loadTaskStatus function in main.js to group tasks by "assign" field (team name) instead of status.
+2. [x] Update the column creation logic to create columns for each unique team.
+3. [x] Update column headers to display team names and task counts per team.
+4. [x] Test the changes by running the application and verifying the dashboard displays tasks grouped by team.

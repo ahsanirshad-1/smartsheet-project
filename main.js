@@ -98,48 +98,40 @@ async function loadTaskStatus() {
     const kanbanContainer = document.createElement("div");
     kanbanContainer.className = "kanban-container";
 
-    // Define status columns
-    const statusColumns = {
-      "Waiting": { icon: "fas fa-clock", color: "#6b7280" },
-      "In Progress": { icon: "fas fa-play", color: "#f59e0b" },
-      "Review": { icon: "fas fa-search", color: "#8b5cf6" },
-      "Done": { icon: "fas fa-check", color: "#10b981" }
-    };
+    // Get unique teams
+    const uniqueTeams = [...new Set(tasks.map(task => task.assign || "Unassigned"))];
 
-    // Group tasks by status
-    const tasksByStatus = tasks.reduce((groups, task) => {
-      const status = task.status || "Waiting";
-      if (!groups[status]) groups[status] = [];
-      groups[status].push(task);
+    // Group tasks by team
+    const tasksByTeam = tasks.reduce((groups, task) => {
+      const team = task.assign || "Unassigned";
+      if (!groups[team]) groups[team] = [];
+      groups[team].push(task);
       return groups;
     }, {});
 
-    // Create columns for each status
-    Object.entries(statusColumns).forEach(([status, config]) => {
+    // Create columns for each team
+    uniqueTeams.forEach(team => {
       const column = document.createElement("div");
       column.className = "kanban-column";
       column.innerHTML = `
-        <h3 style="color: ${config.color}">
-          <i class="${config.icon}"></i>
-          ${status}
-          <span class="task-count">${tasksByStatus[status]?.length || 0}</span>
+        <h3 style="color: #3b82f6">
+          <i class="fas fa-users"></i>
+          ${team}
+          <span class="task-count">${tasksByTeam[team]?.length || 0}</span>
         </h3>
       `;
 
       // Add tasks to this column
-      const tasksInStatus = tasksByStatus[status] || [];
-      tasksInStatus.forEach(task => {
+      const tasksInTeam = tasksByTeam[team] || [];
+      tasksInTeam.forEach(task => {
         const taskCard = document.createElement("div");
         taskCard.className = "kanban-task-card";
         taskCard.innerHTML = `
           <div class="task-card-header">
             <h4 class="task-card-title">${task.taskname}</h4>
+            <span class="task-status">${task.status || "Waiting"}</span>
           </div>
           <div class="task-card-details">
-            <div class="task-card-detail">
-              <i class="fas fa-user"></i>
-              <span>${task.assign || "Unassigned"}</span>
-            </div>
             <div class="task-card-detail">
               <i class="fas fa-calendar-alt"></i>
               <span>${task.startdate || "No start date"}</span>
