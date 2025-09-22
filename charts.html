@@ -53,6 +53,12 @@
           <option value="Waiting">Waiting</option>
         </select>
 
+        <label for="team-filter" style="margin-left: 20px;">Team:</label>
+        <select id="team-filter">
+          <option value="">All</option>
+          <!-- Options populated dynamically -->
+        </select>
+
         <label for="assignee-filter" style="margin-left: 20px;">Assignee:</label>
         <select id="assignee-filter">
           <option value="">All</option>
@@ -88,6 +94,8 @@
           <canvas id="assigneeChart"></canvas>
         </div>
       </div>
+
+
     </section>
 
     <!-- Settings Panel -->
@@ -293,6 +301,8 @@
       }
     });
 
+
+
     // Load chart data
     loadChartData();
 
@@ -304,6 +314,7 @@
 
         // Read filter values
         const status = document.getElementById('status-filter').value;
+        const team = document.getElementById('team-filter').value;
         const assign = document.getElementById('assignee-filter').value;
         const startDate = document.getElementById('start-date-filter').value;
         const endDate = document.getElementById('end-date-filter').value;
@@ -311,6 +322,7 @@
         // Build query params
         const params = new URLSearchParams();
         if (status) params.append('status', status);
+        if (team) params.append('team', team);
         if (assign) params.append('assign', assign);
         if (startDate) params.append('startdate', startDate);
         if (endDate) params.append('enddate', endDate);
@@ -323,6 +335,25 @@
           return;
         }
         const tasks = await res.json();
+
+        // Populate team filter dropdown
+        const teamsRes = await fetch("http://localhost:8000/teams", { headers });
+        if (!teamsRes.ok) {
+          console.error("Failed to fetch teams for charts");
+          return;
+        }
+        const teams = await teamsRes.json();
+
+        const teamFilter = document.getElementById('team-filter');
+        const existingOptions = Array.from(teamFilter.options).map(opt => opt.value);
+        teams.forEach(member => {
+          if (!existingOptions.includes(member.team)) {
+            const option = document.createElement('option');
+            option.value = member.team;
+            option.textContent = member.team;
+            teamFilter.appendChild(option);
+          }
+        });
 
         // Update all charts
         updateStatusChart(tasks);
@@ -405,6 +436,8 @@
       window.assigneeChart.update();
     }
 
+
+
     // Populate assignee filter dynamically
     async function populateAssigneeFilter() {
       try {
@@ -437,6 +470,7 @@
 
     // Add event listeners to filters to reload charts on change
     document.getElementById('status-filter').addEventListener('change', loadChartData);
+    document.getElementById('team-filter').addEventListener('change', loadChartData);
     document.getElementById('assignee-filter').addEventListener('change', loadChartData);
     document.getElementById('start-date-filter').addEventListener('change', loadChartData);
     document.getElementById('end-date-filter').addEventListener('change', loadChartData);

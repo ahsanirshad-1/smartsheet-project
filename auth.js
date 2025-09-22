@@ -144,12 +144,30 @@ function getCurrentUser() {
 
 // Event listeners for forms
 document.addEventListener('DOMContentLoaded', () => {
+  // Handle show password toggles
+  const showPassword = document.getElementById('showPassword');
+  const showConfirmPassword = document.getElementById('showConfirmPassword');
+  const passwordInput = document.getElementById('password');
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+
+  if (showPassword && passwordInput) {
+    showPassword.addEventListener('click', () => {
+      passwordInput.type = showPassword.checked ? 'text' : 'password';
+    });
+  }
+
+  if (showConfirmPassword && confirmPasswordInput) {
+    showConfirmPassword.addEventListener('click', () => {
+      confirmPasswordInput.type = showConfirmPassword.checked ? 'text' : 'password';
+    });
+  }
+
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+      const password = passwordInput.value;
       console.log('Attempting login with:', username);
       const result = await login(username, password);
       console.log('Login result:', result);

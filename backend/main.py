@@ -110,6 +110,59 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+# Add route for forgot password
+@app.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    user = users_col.find_one({"email": request.email})
+    if not user:
+        # To prevent user enumeration, respond with success even if user not found
+        return {"message": "If an account with that email exists, a password reset link has been sent."}
+    # Generate a password reset token (for simplicity, reuse access token with short expiry)
+    reset_token = create_access_token(data={"sub": user["username"]}, expires_delta=timedelta(minutes=15))
+    reset_link = f"http://localhost:8080/reset-password.html?token={reset_token}"
+    # Send email with reset link
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = request.email
+        msg['Subject'] = "Password Reset Request"
+        body = f"Hello,\n\nTo reset your password, please click the following link:\n{reset_link}\n\nIf you did not request this, please ignore this email."
+        msg.attach(MIMEText(body, 'plain'))
+        server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+        server.login(SMTP_USER, SMTP_PASS)
+        server.sendmail(SMTP_USER, request.email, msg.as_string())
+        server.quit()
+    except Exception as e:
+        print(f"Failed to send password reset email: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send email")
+    return {"message": "If an account with that email exists, a password reset link has been sent."}
+
+# Add route for reset password
+@app.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    try:
+        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=400, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    user = users_col.find_one({"username": username})
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    hashed_password = get_password_hash(request.new_password)
+    users_col.update_one({"username": username}, {"$set": {"hashed_password": hashed_password}})
+    return {"message": "Password reset successfully"}
+
 class Task(BaseModel):
     taskname: str
     assign: str
