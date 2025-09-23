@@ -1,5 +1,35 @@
 const API_URL = "http://localhost:8000";
 
+// Presence Modal Functions
+function openPresenceModal() {
+  document.getElementById("presenceModal").style.display = "flex";
+  document.getElementById("presenceForm").reset();
+  document.getElementById("presenceDate").value = new Date().toISOString().split("T")[0];
+  loadMembersForPresence();
+}
+
+function closePresenceModal() {
+  document.getElementById("presenceModal").style.display = "none";
+}
+
+// Load Members for Presence Select
+async function loadMembersForPresence() {
+  try {
+    const res = await fetch(`${API_URL}/teams`);
+    const members = await res.json();
+    const select = document.getElementById("presenceMemberName");
+    select.innerHTML = '<option value="">Select a member</option>';
+    members.forEach(member => {
+      const option = document.createElement("option");
+      option.value = member.name;
+      option.textContent = member.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error loading members for presence:", err);
+  }
+}
+
 
 
 // Open / Close Modal
@@ -124,7 +154,74 @@ document.getElementById("dailyTaskForm").addEventListener("submit", async (e) =>
 document.addEventListener("DOMContentLoaded", () => {
   loadDailyTasks();
   loadMembers();
+  loadPresenceStats();
 });
+
+// Presence Form Submission
+document.getElementById("presenceForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const memberName = document.getElementById("presenceMemberName").value;
+  const date = document.getElementById("presenceDate").value;
+  const status = document.getElementById("presenceStatus").value;
+
+  const presenceData = {
+    member_name: memberName,
+    date: date,
+    status: status
+  };
+
+  const token = localStorage.getItem('authToken');
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}/presence`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(presenceData)
+  });
+
+  if (res.ok) {
+    showToast("✅ Presence marked successfully");
+    loadPresenceStats();
+  } else {
+    showToast("❌ Failed to mark presence");
+  }
+
+  closePresenceModal();
+});
+
+// Load Presence Statistics
+async function loadPresenceStats() {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const res = await fetch(`${API_URL}/presence?date=${today}`);
+    const presenceRecords = await res.json();
+
+    const presentCount = presenceRecords.filter(p => p.status === 'present').length;
+    const absentCount = presenceRecords.filter(p => p.status === 'absent').length;
+    const totalMembers = await getTotalMembers();
+    const notMarkedCount = totalMembers - presentCount - absentCount;
+
+    document.getElementById("present-count").textContent = presentCount;
+    document.getElementById("absent-count").textContent = absentCount;
+    document.getElementById("not-marked-count").textContent = notMarkedCount;
+  } catch (err) {
+    console.error("Error loading presence stats:", err);
+  }
+}
+
+// Get Total Members Count
+async function getTotalMembers() {
+  try {
+    const res = await fetch(`${API_URL}/teams`);
+    const members = await res.json();
+    return members.length;
+  } catch (err) {
+    console.error("Error getting total members:", err);
+    return 0;
+  }
+}
 
 function showToast(msg) {
   const toast = document.createElement("div");

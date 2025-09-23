@@ -15,32 +15,20 @@
   <script>console.log("Choices loaded:", typeof Choices);</script>
   <script src="auth.js" defer></script>
   <script src="main.js" defer></script>
-  <script>
-    // Dummy isLoggedIn function to prevent error, replace with real auth check
-    function isLoggedIn() {
-      // Example: check if authToken exists in localStorage
-      return !!localStorage.getItem("authToken");
-    }
-    // Check authentication on page load
-    // Temporarily disabled for testing
-    // if (!isLoggedIn()) {
-    //   window.location.href = "login.html";
-    // }
-  </script>
+  <script src="data.js" defer></script>
 </head>
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
     <h2>Task Manager</h2>
     <nav>
-      <a href="index.html" class="active"
-        ><i class="fas fa-chart-bar"></i> Dashboard</a
-      >
+      <a href="index.html" class="active"><i class="fas fa-chart-bar"></i> Dashboard</a>
       <a href="#" id="notifications-link"><i class="fas fa-bell"></i> Notifications</a>
       <a href="charts.html"><i class="fas fa-chart-line"></i> Charts</a>
       <a href="workspace.html"><i class="fas fa-folder"></i> Workspace</a>
       <a href="daily.html"><i class="fas fa-calendar-day"></i> Daily Check-in</a>
       <a href="teams.html"><i class="fas fa-users"></i> Teams</a>
+      <a href="leaves.html"><i class="fas fa-calendar-alt"></i> Leaves & Presence</a>
       <a href="#" id="settings-link"><i class="fas fa-cog"></i> Settings</a>
     </nav>
   </aside>
@@ -121,42 +109,6 @@
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // Panel toggling
-    document.getElementById('notifications-link').addEventListener('click', function(e) {
-      e.preventDefault();
-      togglePanel('notifications-panel');
-    });
 
-
-
-    document.getElementById('settings-link').addEventListener('click', function(e) {
-      e.preventDefault();
-      togglePanel('settings-panel');
-    });
-
-    function togglePanel(panelId) {
-      const panel = document.getElementById(panelId);
-      const isVisible = panel.style.display === 'block';
-      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-      if (!isVisible) {
-        panel.style.display = 'block';
-      }
-    }
-
-
-
-    // Settings
-    document.getElementById('save-settings').addEventListener('click', function() {
-      const theme = document.getElementById('theme-select').value;
-      const notifications = document.getElementById('notifications-toggle').checked;
-      const autoSave = document.getElementById('auto-save-toggle').checked;
-
-      // Save settings (for demo, just log)
-      console.log('Settings saved:', { theme, notifications, autoSave });
-      alert('Settings saved!');
-    });
-  </script>
 </body>
 </html>

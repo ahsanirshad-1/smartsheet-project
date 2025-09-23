@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task Manager - Leaves & Presence</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="leaves.js" defer></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>Task Manager</h2>
+    <nav>
+      <a href="index.html"><i class="fas fa-chart-bar"></i> Dashboard</a>
+      <a href="workspace.html"><i class="fas fa-folder"></i> Workspace</a>
+      <a href="daily.html"><i class="fas fa-calendar-day"></i> Daily Check-in</a>
+      <a href="teams.html"><i class="fas fa-users"></i> Teams</a>
+      <a href="leaves.html" class="active"><i class="fas fa-calendar-alt"></i> Leaves & Presence</a>
+      <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <header class="header">
+      <h1><i class="fas fa-calendar-alt"></i> Leaves & Presence Tracking</h1>
+      <div class="header-actions">
+        <button onclick="openLeaveModal()"><i class="fas fa-plus"></i> Request Leave</button>
+        <button onclick="openPresenceModal()"><i class="fas fa-user-check"></i> Mark Presence</button>
+      </div>
+    </header>
+
+    <!-- Team Members Table -->
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Team</th>
+          <th>Total Leaves</th>
+          <th>Today's Presence</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="teamBody"></tbody>
+    </table>
+
+    <!-- Leave Request Modal -->
+    <div id="leaveModal" class="modal">
+      <div class="modal-content">
+        <h2>Request Leave</h2>
+        <form id="leaveForm">
+          <label>Member Name</label>
+          <input type="text" id="leaveMemberName" required />
+
+          <label>Start Date</label>
+          <input type="date" id="leaveStartDate" required />
+
+          <label>End Date</label>
+          <input type="date" id="leaveEndDate" required />
+
+          <label>Reason</label>
+          <textarea id="leaveReason" required></textarea>
+
+          <button type="submit">Submit Request</button>
+          <button type="button" onclick="closeLeaveModal()">Cancel</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Presence Modal -->
+    <div id="presenceModal" class="modal">
+      <div class="modal-content">
+        <h2>Mark Daily Presence</h2>
+        <form id="presenceForm">
+          <label>Member Name</label>
+          <input type="text" id="presenceMemberName" required />
+
+          <label>Date</label>
+          <input type="date" id="presenceDate" required />
+
+          <label>Status</label>
+          <select id="presenceStatus" required>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+          </select>
+
+          <button type="submit">Mark Presence</button>
+          <button type="button" onclick="closePresenceModal()">Cancel</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Presence Modal -->
+    <div id="editPresenceModal" class="modal">
+      <div class="modal-content">
+        <h2>Edit Presence Status</h2>
+        <form id="editPresenceForm">
+          <label>Member Name</label>
+          <input type="text" id="editPresenceMemberName" readonly />
+
+          <label>Date</label>
+          <input type="date" id="editPresenceDate" readonly />
+
+          <label>Current Status</label>
+          <div id="currentPresenceStatus" class="status-display"></div>
+
+          <label>New Status</label>
+          <select id="editPresenceStatus" required>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+          </select>
+
+          <button type="submit">Update Presence</button>
+          <button type="button" onclick="closeEditPresenceModal()">Cancel</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Member Details Modal -->
+    <div id="memberDetailsModal" class="modal">
+      <div class="modal-content member-details-content">
+        <div class="modal-header">
+          <h2 id="memberDetailsTitle">Member Details</h2>
+          <button onclick="closeMemberDetailsModal()" class="close-btn">&times;</button>
+        </div>
+
+        <div class="member-info">
+          <div class="member-summary">
+            <h3 id="memberName"></h3>
+            <p id="memberEmail"></p>
+            <p id="memberTeam"></p>
+          </div>
+
+          <div class="member-stats">
+            <div class="stat-card">
+              <h4>Total Leaves</h4>
+              <span id="totalLeaves">0</span>
+            </div>
+            <div class="stat-card">
+              <h4>Pending Leaves</h4>
+              <span id="pendingLeaves">0</span>
+            </div>
+            <div class="stat-card">
+              <h4>Approved Leaves</h4>
+              <span id="approvedLeaves">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="member-history">
+          <div class="history-section">
+            <h3>Leave History</h3>
+            <div id="leaveHistory" class="history-list">
+              <!-- Leave history will be populated here -->
+            </div>
+          </div>
+
+          <div class="history-section">
+            <h3>Presence History (Last 30 Days)</h3>
+            <div id="presenceHistory" class="history-list">
+              <!-- Presence history will be populated here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

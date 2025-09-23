@@ -17,6 +17,7 @@
       <a href="workspace.html"><i class="fas fa-folder"></i> Workspace</a>
       <a href="daily.html" class="active"><i class="fas fa-calendar-day"></i> Daily Check-in</a>
       <a href="teams.html"><i class="fas fa-users"></i> Teams</a>
+      <a href="leaves.html"><i class="fas fa-calendar-alt"></i> Leaves & Presence</a>
       <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
     </nav>
   </aside>
@@ -27,8 +28,28 @@
       <h1><i class="fas fa-calendar-day"></i> Daily Check-in</h1>
       <div class="header-actions">
         <button onclick="openDailyForm()"><i class="fas fa-plus"></i> Add Daily Task</button>
+        <button onclick="openPresenceModal()"><i class="fas fa-user-check"></i> Mark Presence</button>
       </div>
     </header>
+
+    <!-- Presence Status Section -->
+    <section class="presence-section">
+      <h2>Today's Presence Status</h2>
+      <div class="presence-grid">
+        <div class="presence-card">
+          <h3><i class="fas fa-user-check"></i> Present</h3>
+          <div class="presence-count" id="present-count">0</div>
+        </div>
+        <div class="presence-card">
+          <h3><i class="fas fa-user-times"></i> Absent</h3>
+          <div class="presence-count" id="absent-count">0</div>
+        </div>
+        <div class="presence-card">
+          <h3><i class="fas fa-user-clock"></i> Not Marked</h3>
+          <div class="presence-count" id="not-marked-count">0</div>
+        </div>
+      </div>
+    </section>
 
     <section class="daily-grid">
       <div class="daily-card">
@@ -65,6 +86,31 @@
 
         <button type="submit" id="submitBtn">Save</button>
         <button type="button" onclick="closeDailyForm()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Presence Modal -->
+  <div id="presenceModal" class="modal">
+    <div class="modal-content">
+      <h2>Mark Daily Presence</h2>
+      <form id="presenceForm">
+        <label>Member Name</label>
+        <select id="presenceMemberName" required>
+          <option value="">Select a member</option>
+        </select>
+
+        <label>Date</label>
+        <input type="date" id="presenceDate" required>
+
+        <label>Status</label>
+        <select id="presenceStatus" required>
+          <option value="present">Present</option>
+          <option value="absent">Absent</option>
+        </select>
+
+        <button type="submit">Mark Presence</button>
+        <button type="button" onclick="closePresenceModal()">Cancel</button>
       </form>
     </div>
   </div>

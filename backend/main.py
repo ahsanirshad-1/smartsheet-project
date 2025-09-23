@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 # Database setup with retry logic
 def connect_to_mongodb():
@@ -44,6 +46,8 @@ users_col = mongo_db['users']
 tasks_col = mongo_db['tasks']
 daily_col = mongo_db['daily']
 team_col = mongo_db['teams']
+leaves_col = mongo_db['leaves']
+presence_col = mongo_db['presence']
 
 # Load environment variables
 load_dotenv()
@@ -85,6 +89,48 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Setup scheduler for automatic reminders
+scheduler = BackgroundScheduler()
+
+def scheduled_send_reminders():
+    """Scheduled job to send reminder emails for tasks due tomorrow"""
+    try:
+        tomorrow = (datetime.utcnow() + timedelta(days=1)).strftime("%Y-%m-%d")
+        tasks_to_remind = tasks_col.find({"sendReminder": True, "enddate": tomorrow})
+        sent_count = 0
+
+        for task in tasks_to_remind:
+            assign = task.get("assign")
+            taskname = task.get("taskname")
+            if assign:
+                member = team_col.find_one({"name": assign})
+                if member:
+                    email = member.get("email")
+                    if email:
+                        send_email(email, f"Reminder: {taskname}", assign)
+                        sent_count += 1
+
+        if sent_count > 0:
+            print(f"Scheduled reminder job: Sent {sent_count} reminder emails for {tomorrow}")
+        else:
+            print(f"Scheduled reminder job: No reminders to send for {tomorrow}")
+
+    except Exception as e:
+        print(f"Error in scheduled reminder job: {e}")
+
+# Schedule the job to run daily at 9:00 AM
+scheduler.add_job(
+    scheduled_send_reminders,
+    CronTrigger(hour=9, minute=0),  # 9:00 AM daily
+    id='daily_reminders',
+    name='Send daily task reminders',
+    replace_existing=True
+)
+
+# Start the scheduler
+scheduler.start()
+print("Reminder scheduler started - will send daily reminders at 9:00 AM")
 
 # Security
 SECRET_KEY = "your-secret-key"
@@ -183,6 +229,20 @@ class TeamMember(BaseModel):
     name: str
     email: str
     team: str
+
+class LeaveRequest(BaseModel):
+    member_name: str
+    start_date: str
+    end_date: str
+    reason: str
+    status: str = "pending"  # pending, approved, rejected
+    requested_by: str
+    approved_by: Optional[str] = None
+
+class Presence(BaseModel):
+    member_name: str
+    date: str
+    status: str  # present, absent
 
 # Utils
 def verify_password(plain_password, hashed_password):
@@ -426,3 +486,166 @@ async def send_reminders():
                     send_email(email, f"{taskname} - Reminder", assign)
                     sent_count += 1
     return {"message": f"Sent {sent_count} reminder emails"}
+
+# Leave endpoints
+@app.get("/leaves", response_model=List[LeaveRequest])
+async def get_leaves(member_name: Optional[str] = Query(None), status: Optional[str] = Query(None)):
+    query = {}
+    if member_name:
+        query["member_name"] = member_name
+    if status:
+        query["status"] = status
+    leaves = []
+    for leave_doc in leaves_col.find(query):
+        leaves.append(LeaveRequest(
+            member_name=leave_doc.get("member_name"),
+            start_date=leave_doc.get("start_date"),
+            end_date=leave_doc.get("end_date"),
+            reason=leave_doc.get("reason"),
+            status=leave_doc.get("status"),
+            requested_by=leave_doc.get("requested_by"),
+            approved_by=leave_doc.get("approved_by")
+        ))
+    return leaves
+
+@app.post("/leaves")
+async def create_leave_request(leave: LeaveRequest, current_user: str = Depends(get_current_user)):
+    leave_doc = {
+        "member_name": leave.member_name,
+        "start_date": leave.start_date,
+        "end_date": leave.end_date,
+        "reason": leave.reason,
+        "status": leave.status,
+        "requested_by": leave.requested_by,
+        "approved_by": leave.approved_by
+    }
+    leaves_col.insert_one(leave_doc)
+    return {"message": "Leave request created"}
+
+@app.put("/leaves/{member_name}/{start_date}")
+async def update_leave_request(member_name: str, start_date: str, leave: LeaveRequest, current_user: str = Depends(get_current_user)):
+    leaves_col.update_one(
+        {"member_name": member_name, "start_date": start_date},
+        {"$set": {
+            "end_date": leave.end_date,
+            "reason": leave.reason,
+            "status": leave.status,
+            "approved_by": leave.approved_by
+        }}
+    )
+    return {"message": "Leave request updated"}
+
+@app.delete("/leaves/{member_name}/{start_date}")
+async def delete_leave_request(member_name: str, start_date: str, current_user: str = Depends(get_current_user)):
+    leaves_col.delete_one({"member_name": member_name, "start_date": start_date})
+    return {"message": "Leave request deleted"}
+
+# Presence endpoints
+@app.get("/presence", response_model=List[Presence])
+async def get_presence(member_name: Optional[str] = Query(None), date: Optional[str] = Query(None)):
+    query = {}
+    if member_name:
+        query["member_name"] = member_name
+    if date:
+        query["date"] = date
+    presence_records = []
+    for presence_doc in presence_col.find(query):
+        presence_records.append(Presence(
+            member_name=presence_doc.get("member_name"),
+            date=presence_doc.get("date"),
+            status=presence_doc.get("status")
+        ))
+    return presence_records
+
+@app.post("/presence")
+async def mark_presence(presence: Presence, current_user: str = Depends(get_current_user)):
+    presence_doc = {
+        "member_name": presence.member_name,
+        "date": presence.date,
+        "status": presence.status
+    }
+    presence_col.insert_one(presence_doc)
+    return {"message": "Presence marked"}
+
+@app.put("/presence/{member_name}/{date}")
+async def update_presence(member_name: str, date: str, presence: Presence, current_user: str = Depends(get_current_user)):
+    presence_col.update_one(
+        {"member_name": member_name, "date": date},
+        {"$set": {
+            "status": presence.status
+        }}
+    )
+    return {"message": "Presence updated"}
+
+@app.delete("/presence/{member_name}/{date}")
+async def delete_presence(member_name: str, date: str, current_user: str = Depends(get_current_user)):
+    presence_col.delete_one({"member_name": member_name, "date": date})
+    return {"message": "Presence record deleted"}
+
+# Additional endpoints for better functionality
+@app.get("/leaves/{member_name}")
+async def get_member_leaves(member_name: str):
+    """Get all leaves for a specific member"""
+    leaves = []
+    for leave_doc in leaves_col.find({"member_name": member_name}):
+        leaves.append(LeaveRequest(
+            member_name=leave_doc.get("member_name"),
+            start_date=leave_doc.get("start_date"),
+            end_date=leave_doc.get("end_date"),
+            reason=leave_doc.get("reason"),
+            status=leave_doc.get("status"),
+            requested_by=leave_doc.get("requested_by"),
+            approved_by=leave_doc.get("approved_by")
+        ))
+    return leaves
+
+@app.get("/presence/{member_name}")
+async def get_member_presence(member_name: str):
+    """Get all presence records for a specific member"""
+    presence_records = []
+    for presence_doc in presence_col.find({"member_name": member_name}):
+        presence_records.append(Presence(
+            member_name=presence_doc.get("member_name"),
+            date=presence_doc.get("date"),
+            status=presence_doc.get("status")
+        ))
+    return presence_records
+
+@app.get("/leaves/stats/{member_name}")
+async def get_member_leave_stats(member_name: str):
+    """Get leave statistics for a member"""
+    total_leaves = leaves_col.count_documents({"member_name": member_name})
+    approved_leaves = leaves_col.count_documents({"member_name": member_name, "status": "approved"})
+    pending_leaves = leaves_col.count_documents({"member_name": member_name, "status": "pending"})
+    rejected_leaves = leaves_col.count_documents({"member_name": member_name, "status": "rejected"})
+
+    return {
+        "member_name": member_name,
+        "total_leaves": total_leaves,
+        "approved_leaves": approved_leaves,
+        "pending_leaves": pending_leaves,
+        "rejected_leaves": rejected_leaves
+    }
+
+@app.get("/presence/stats/{member_name}")
+async def get_member_presence_stats(member_name: str):
+    """Get presence statistics for a member"""
+    total_days = presence_col.count_documents({"member_name": member_name})
+    present_days = presence_col.count_documents({"member_name": member_name, "status": "present"})
+    absent_days = presence_col.count_documents({"member_name": member_name, "status": "absent"})
+
+    attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
+
+    return {
+        "member_name": member_name,
+        "total_days": total_days,
+        "present_days": present_days,
+        "absent_days": absent_days,
+        "attendance_rate": round(attendance_rate, 2)
+    }
+
+# Shutdown handler to stop the scheduler
+@app.on_event("shutdown")
+def shutdown_event():
+    scheduler.shutdown()
+    print("Reminder scheduler stopped")

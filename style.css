@@ -1,10 +1,15 @@
 /* 🌐 Global */
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
   display: flex;
   background: #0f172a;
   color: #e2e8f0;
+  line-height: 1.6;
 }
 
 /* Sidebar */
@@ -235,6 +240,36 @@ main {
 .modal-content button[type="button"] {
   background: #444;
   color: #f0f0f0;
+}
+
+/* Status Display in Edit Presence Modal */
+.status-display {
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-present {
+  background-color: #10b981;
+  color: white;
+  border: 2px solid #059669;
+}
+
+.status-absent {
+  background-color: #ef4444;
+  color: white;
+  border: 2px solid #dc2626;
+}
+
+.status-not-marked {
+  background-color: #6b7280;
+  color: white;
+  border: 2px solid #4b5563;
 }
 
 /* =========
@@ -1007,60 +1042,257 @@ main {
   box-shadow: 0 6px 12px rgba(30, 64, 175, 0.8);
 }
 
-/* Kanban Dashboard Styles */
-.kanban-container {
-  display: flex;
-  gap: 15px;
-  overflow-x: auto;
-  padding: 1rem 0;
-}
-.kanban-column {
-  background: #1e293b;
-  border-radius: 10px;
-  padding: 15px;
-  min-width: 250px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-.kanban-column h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-weight: 700;
-  font-size: 1.2em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #38bdf8;
-}
-.kanban-column h3 i {
-  font-size: 1.3em;
-}
-.task-card {
-  background: #0f172a;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  cursor: pointer;
-  white-space: pre-line;
-  color: #e2e8f0;
+/* Remove duplicate Kanban styles - keeping the more comprehensive ones above */
+
+/* =========
+   Presence Tracking Styles
+   ========= */
+
+/* Presence Section */
+.presence-section {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   border: 1px solid #334155;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
-.modal-content button[type="button"]:hover {
-  background: #666;
+.presence-section h2 {
+  color: #38bdf8;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
 }
-.modal.show {
+
+.presence-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+  border-radius: 2px;
+}
+
+/* Presence Grid */
+.presence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.presence-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.presence-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+}
+
+.presence-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  border-color: #38bdf8;
+}
+
+.presence-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #cbd5e1;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.presence-card h3 i {
+  font-size: 1.2rem;
+}
+
+.presence-card h3 i.fa-user-check {
+  color: #10b981;
+}
+
+.presence-card h3 i.fa-user-times {
+  color: #ef4444;
+}
+
+.presence-card h3 i.fa-user-clock {
+  color: #f59e0b;
+}
+
+.presence-count {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #38bdf8;
+  text-shadow: 0 2px 4px rgba(56, 189, 248, 0.3);
+  margin-top: 0.5rem;
+}
+
+/* Presence Modal */
+#presenceModal .modal-content {
+  width: 450px;
+}
+
+#presenceModal .modal-content h2 {
+  color: #38bdf8;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+#presenceModal .modal-content form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+#presenceModal .modal-content form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#presenceModal .modal-content form input,
+#presenceModal .modal-content form select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+#presenceModal .modal-content form input:focus,
+#presenceModal .modal-content form select:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+}
+
+#presenceModal .modal-content form input:hover,
+#presenceModal .modal-content form select:hover {
+  border-color: #38bdf8;
+}
+
+#presenceModal .modal-content form select option[value="present"] {
+  color: #10b981;
+}
+
+#presenceModal .modal-content form select option[value="absent"] {
+  color: #ef4444;
+}
+
+#presenceModal .modal-content form button {
+  grid-column: 1 / -1;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+#presenceModal .modal-content form button[type="submit"] {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+#presenceModal .modal-content form button[type="submit"]:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+#presenceModal .modal-content form button[type="button"] {
+  background: #6b7280;
+  color: white;
+}
+
+#presenceModal .modal-content form button[type="button"]:hover {
+  background: #4b5563;
+}
+
+/* Responsive Presence Styles */
+@media (max-width: 768px) {
+  .presence-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .presence-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .presence-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .presence-card {
+    padding: 1rem;
+  }
+
+  .presence-count {
+    font-size: 2rem;
+  }
+
+  #presenceModal .modal-content {
+    width: 90vw;
+    max-width: 400px;
+  }
+
+  #presenceModal .modal-content form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .presence-section {
+    padding: 1rem;
+  }
+
+  .presence-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .presence-card {
+    padding: 0.8rem;
+  }
+
+  .presence-count {
+    font-size: 1.8rem;
+  }
 }
 /* Responsive */
 @media (max-width: 768px) {
@@ -1087,15 +1319,181 @@ main {
   }
 }
 
+/* Member Details Modal */
+.member-details-content {
+  width: 800px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #334155;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #e2e8f0;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.close-btn:hover {
+  background-color: #334155;
+}
+
+.member-info {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.member-summary h3 {
+  margin: 0 0 0.5rem 0;
+  color: #38bdf8;
+  font-size: 1.5rem;
+}
+
+.member-summary p {
+  margin: 0.25rem 0;
+  color: #cbd5e1;
+}
+
+.member-stats {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+}
+
+.stat-card {
+  flex: 1;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #334155;
+}
+
+.stat-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #a0aec0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card span {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+.member-history {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.history-section h3 {
+  color: #38bdf8;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 0.5rem;
+}
+
+.history-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #334155;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #1e293b;
+  border-radius: 6px;
+  border-left: 3px solid #38bdf8;
+}
+
+.history-item:last-child {
+  margin-bottom: 0;
+}
+
+.history-date {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.history-reason {
+  flex: 1;
+  margin: 0 1rem;
+  color: #a0aec0;
+}
+
+.history-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background-color: #f59e0b;
+  color: #1e293b;
+}
+
+.status-approved {
+  background-color: #10b981;
+  color: white;
+}
+
+.status-rejected {
+  background-color: #ef4444;
+  color: white;
+}
+
+.status-present {
+  background-color: #10b981;
+  color: white;
+}
+
+.status-absent {
+  background-color: #ef4444;
+  color: white;
+}
+
+.status-not-marked {
+  background-color: #6b7280;
+  color: white;
+}
+
 /* Form Containers */
 .form-container {
   max-width: 500px;
   margin: 2rem auto;
-  background: #1e293b;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   color: #e2e8f0;
+  border: 1px solid #334155;
 }
 
 .form-container h2 {
